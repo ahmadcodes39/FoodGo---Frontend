@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.customGradient{
+    background: hsla(52, 82%, 52%, 1);
+
+background: linear-gradient(90deg, hsla(52, 82%, 52%, 1) 0%, hsla(41, 76%, 48%, 1) 0%, hsla(1, 92%, 47%, 1) 100%);
+
+background: -moz-linear-gradient(90deg, hsla(52, 82%, 52%, 1) 0%, hsla(41, 76%, 48%, 1) 0%, hsla(1, 92%, 47%, 1) 100%);
+
+background: -webkit-linear-gradient(90deg, hsla(52, 82%, 52%, 1) 0%, hsla(41, 76%, 48%, 1) 0%, hsla(1, 92%, 47%, 1) 100%);
+
+filter: progid: DXImageTransform.Microsoft.gradient( startColorstr="#e9d022", endColorstr="#d89d1d", GradientType=1 );
+}
