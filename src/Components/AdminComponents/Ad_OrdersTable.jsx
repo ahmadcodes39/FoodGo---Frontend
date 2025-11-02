@@ -49,7 +49,6 @@ const Ad_OrdersTable = ({ data }) => {
     <div className="overflow-x-auto p-6">
       <div className="border rounded-xl shadow-sm">
         <table className="table w-full">
-          {/* Header */}
           <thead className="bg-gray-50 text-gray-700 text-sm uppercase">
             <tr>
               <th className="px-4 py-3">ORDER ID</th>
@@ -63,7 +62,6 @@ const Ad_OrdersTable = ({ data }) => {
             </tr>
           </thead>
 
-          {/* Body */}
           <tbody className="text-sm">
             {ordersData.length === 0 ? (
               <tr>
@@ -77,12 +75,10 @@ const Ad_OrdersTable = ({ data }) => {
                   key={item.id}
                   className="hover:bg-gray-50 border-b last:border-none"
                 >
-                  {/* ORDER ID */}
-                  <td className="px-4 py-3 text-orange-600 font-medium">
+                  <td className="px-4 py-3 ">
                     {item.id.slice(0, 12)}...
                   </td>
 
-                  {/* CUSTOMER */}
                   <td className="px-4 py-3">
                     <div className="flex flex-col">
                       <span className="font-medium">{item.name}</span>
@@ -92,30 +88,25 @@ const Ad_OrdersTable = ({ data }) => {
                     </div>
                   </td>
 
-                  {/* RESTAURANT */}
                   <td className="px-4 py-3">{item.restaurantName}</td>
 
-                  {/* ITEMS */}
                   <td className="px-4 py-3">
                     <span className="font-semibold text-xs">
                       {item.items} items
                     </span>
                   </td>
 
-                  {/* TOTAL */}
                   <td className="px-4 py-3 font-semibold text-gray-800">
                     ${item.total}
                   </td>
 
-                  {/* DATE & TIME */}
                   <td className="px-4 py-3">
                     <div className="flex flex-col">
-                      <span>{item.date}</span>
+                      <span>{new Date(item.date).toLocaleDateString("en-GB")}</span>
                       <span className="text-xs text-gray-400">{item.time}</span>
                     </div>
                   </td>
 
-                  {/* STATUS */}
                   <td className="px-4 py-3">
                     <span
                       className={`px-3 py-1 text-xs font-medium border rounded-full ${
@@ -127,7 +118,6 @@ const Ad_OrdersTable = ({ data }) => {
                     </span>
                   </td>
 
-                  {/* ACTIONS */}
                   <td className="px-4 py-3">
                     <button
                       onClick={() => handleBtnClick(item)}

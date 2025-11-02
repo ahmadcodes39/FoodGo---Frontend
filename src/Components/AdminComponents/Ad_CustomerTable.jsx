@@ -1,9 +1,11 @@
 import { Eye } from "lucide-react";
 import React, { useEffect, useState } from "react";
-
+// import { customerInfoData } from "../Dummy Data/DummyData";
+import Ad_CustomerInfoModel from "./Models/Ad_CustomerInfoModel";
 const Ad_CustomerTable = ({ data }) => {
-  const [customerData, setCustomerData] = useState([]);
 
+  const [customerData, setCustomerData] = useState([]);
+  const [selectedCustomer,setSelectedCustomer] = useState(null)
   useEffect(() => {
     setCustomerData(data || []);
   }, [data]);
@@ -14,6 +16,8 @@ const Ad_CustomerTable = ({ data }) => {
     Blocked: "bg-red-100 text-red-700 border-red-300",
   };
 
+ 
+
   const handleStatusChange = (id, newStatus) => {
     setCustomerData((prev) =>
       prev.map((customer) =>
@@ -23,11 +27,15 @@ const Ad_CustomerTable = ({ data }) => {
   };
 
   const handleBtnClick = (item) => {
+    setSelectedCustomer(item)
+   setTimeout(() => {
+     document.getElementById("ad_customer_info_modal").showModal()
+   }, 0);
     console.log("requested customer ", item);
   };
 
   return (
-    <div className="overflow-x-auto p-6">
+    <div className="overflow-x-auto mt-8">
       <div className="border rounded-xl shadow-sm">
         <table className="table w-full">
           {/* Header */}
@@ -85,9 +93,7 @@ const Ad_CustomerTable = ({ data }) => {
                   </td>
 
                   {/* JOINED */}
-                  <td className="px-4 py-3 text-gray-600">
-                    {customer.joined}
-                  </td>
+                  <td className="px-4 py-3 text-gray-600">{new Date(customer.joined).toLocaleDateString("en-GB")}</td>
 
                   {/* STATUS */}
                   <td className="px-4 py-3">
@@ -138,6 +144,7 @@ const Ad_CustomerTable = ({ data }) => {
           </tbody>
         </table>
       </div>
+      <Ad_CustomerInfoModel data={selectedCustomer}/>
     </div>
   );
 };

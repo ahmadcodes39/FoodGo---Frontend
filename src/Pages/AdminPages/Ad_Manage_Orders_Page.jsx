@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import TopHeading from "../../Components/Common/TopHeading";
 import FilterHeader from "../../Components/Common/FilterHeader";
 import Ad_OrdersTable from "../../Components/AdminComponents/Ad_OrdersTable";
-
+import { dummyOrders } from "../../Components/Dummy Data/DummyData";
 const Ad_Manage_Orders_Page = () => {
   const [activeStatus, setActiveStatus] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
@@ -14,55 +14,31 @@ const Ad_Manage_Orders_Page = () => {
     "pending",
     "confirmed",
     "preparing",
-    "on the way",
+    "arriving",
     "delivered",
   ];
-  const dummyOrders = [
-    {
-      id: "ORD123456",
-      name: "Ali Khan",
-      email: "ali.khan@example.com",
-      restaurantName: "Pizza Mania",
-      items: 3,
-      total: 1200,
-      date: "2025-09-30",
-      time: "12:45 PM",
-      status: "Pending",
-    },
-    {
-      id: "ORD987654",
-      name: "Sara Ahmed",
-      email: "sara.ahmed@example.com",
-      restaurantName: "Burger Hub",
-      items: 2,
-      total: 850,
-      date: "2025-09-29",
-      time: "08:15 PM",
-      status: "Preparing",
-    },
-    {
-      id: "ORD567890",
-      name: "Usman Ali",
-      email: "usman.ali@example.com",
-      restaurantName: "Biryani Point",
-      items: 4,
-      total: 1450,
-      date: "2025-09-28",
-      time: "02:30 PM",
-      status: "Arriving",
-    },
-    {
-      id: "ORD246810",
-      name: "Maryam Fatima",
-      email: "maryam.fatima@example.com",
-      restaurantName: "Kebab Junction",
-      items: 1,
-      total: 500,
-      date: "2025-09-27",
-      time: "07:00 PM",
-      status: "Delivered",
-    },
-  ];
+  //filtering
+const filteredData = dummyOrders.filter((item) => {
+  const query = searchQuery.toLowerCase();
+
+  const matchesSearch =
+    item.id?.toLowerCase().includes(query) ||
+    item.name?.toLowerCase().includes(query) ||
+    item.email?.toLowerCase().includes(query) ||
+    item.restaurantName?.toLowerCase().includes(query) ||
+    item.time?.toLowerCase().includes(query) ||
+    new Date(item.date)
+      .toLocaleDateString("en-GB") // Format: DD/MM/YYYY
+      .toLowerCase()
+      .includes(query);
+
+  const matchesStatus =
+    activeStatus === "All" ||
+    item.status?.toLowerCase() === activeStatus.toLowerCase();
+
+  return matchesSearch && matchesStatus;
+});
+
 
   return (
     <div className="p-4">
@@ -74,7 +50,7 @@ const Ad_Manage_Orders_Page = () => {
         setSearchQuery={setSearchQuery}
         statuses={ordersStats}
       />
-      <Ad_OrdersTable data={dummyOrders}/>
+      <Ad_OrdersTable data={filteredData}/>
     </div>
   );
 };

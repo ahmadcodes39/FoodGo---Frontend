@@ -63,7 +63,7 @@ const Ad_ordersDetailModel = ({ order }) => {
         <div className="modal-action">
           <button
              onClick={()=>document.getElementById('ad_orders_detail_model').close()}
-            className="btn bg-gray-200 hover:bg-gray-300"
+            className="btn btn-primary btn-outline"
           >
             Close
           </button>

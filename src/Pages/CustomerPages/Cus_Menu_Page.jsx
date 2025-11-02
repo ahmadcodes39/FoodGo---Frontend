@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import Cus_RestaurantHeader from "../../Components/CustomerComponents/Cus_RestaurantHeader";
 import Cus_RestaurantMenuSection from "../../Components/CustomerComponents/Cus_RestaurantMenuSection";
 import FilterButton from "../../Components/Common/FilterButton";
 import Footer from "../../Components/Common/Footer";
-import Cus_TopHeader from "../../Components/CustomerComponents/Cus_TopHeader";
+import { dummyMenu } from "../../Components/Dummy Data/DummyData";
+import Header from "../../Components/Landing Page Components/Header";
+
 const Cus_Menu_Page = () => {
   const dummyRestaurant = {
     name: "Pizza Palace",
@@ -17,64 +19,41 @@ const Cus_Menu_Page = () => {
     deliveryAvailable: true,
     deliveryTime: "25-35 min",
   };
-  const dummyMenu = [
-    {
-      id: 1,
-      name: "Margherita Pizza",
-      category: "Pizza",
-      price: 12.99,
-      image: "https://images.unsplash.com/photo-1600891964599-f61ba0e24092",
-      description: "Classic pizza with fresh mozzarella and basil.",
-    },
-    {
-      id: 2,
-      name: "Pepperoni Pizza",
-      category: "Pizza",
-      price: 14.99,
-      image: "https://images.unsplash.com/photo-1600891964599-f61ba0e24092",
-      description: "Loaded with pepperoni and cheese.",
-    },
-    {
-      id: 3,
-      name: "Spaghetti Carbonara",
-      category: "Pasta",
-      price: 13.5,
-      image: "https://images.unsplash.com/photo-1600891964599-f61ba0e24092",
-      description: "Rich pasta with bacon, egg, and parmesan.",
-    },
-    {
-      id: 4,
-      name: "Caesar Salad",
-      category: "Salads",
-      price: 9.99,
-      image: "https://images.unsplash.com/photo-1600891964599-f61ba0e24092",
-      description: "Crispy romaine with creamy dressing.",
-    },
-  ];
-  const menuStats = ["All", "Piza", "Pasta", "salad", "desert", "Drink"];
+
+  const menuStats = ["All", "Pizza", "Pasta", "Salads", "Dessert", "Drink"];
 
   const [activeStatus, setActiveStatus] = useState("All");
 
-  const omBtnClick = (text) => {
+  //  Filtering 
+  const filteredMenus = useMemo(() => {
+    if (activeStatus === "All") return dummyMenu;
+    return dummyMenu.filter(
+      (item) => item.category.toLowerCase() === activeStatus.toLowerCase()
+    );
+  }, [activeStatus]);
+
+  const onBtnClick = (text) => {
     setActiveStatus(text);
-    console.log(`btn clicked ${text}`);
+    console.log(`Button clicked: ${text}`);
   };
 
   return (
-    <div className="flex gap-4 flex-col ">
-      <Cus_TopHeader />
+    <div className="flex flex-col gap-4 mt-[90px]">
+      <Header />
       <Cus_RestaurantHeader restaurant={dummyRestaurant} />
-      <div className="flex justify-end gap-3 md:sticky md:top-16 z-10 bg-white p-5">
+
+      <div className="flex justify-end gap-3 md:sticky md:top-16 z-10 bg-white p-5 flex-wrap">
         {menuStats.map((item, index) => (
           <FilterButton
             key={index}
             text={item}
             isActive={activeStatus === item}
-            onBtnClick={() => omBtnClick(item)}
+            onBtnClick={() => onBtnClick(item)}
           />
         ))}
       </div>
-      <Cus_RestaurantMenuSection menuItems={dummyMenu} />
+
+      <Cus_RestaurantMenuSection menuItems={filteredMenus} />
       <Footer />
     </div>
   );

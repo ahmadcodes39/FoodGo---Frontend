@@ -13,7 +13,7 @@ const Footer = () => {
               <div className="text-orange-500 text-2xl font-bold">
                 <i className="fa-solid fa-burger"></i>
               </div>
-              <h2 className="text-2xl font-bold text-white flex gap-2 items-center"><span className="text-orange-500"><UtensilsCrossed/> </span>FoodExpress</h2>
+              <h2 className="text-2xl font-bold text-white flex gap-2 items-center"><span className="text-orange-500"><UtensilsCrossed/> </span>FoodGo</h2>
             </div>
             <p className="mt-3 text-sm text-gray-400 leading-relaxed">
               Your trusted partner for fast and delicious food delivery
@@ -64,7 +64,7 @@ const Footer = () => {
 
         {/* Bottom Section */}
         <div className="flex flex-col md:flex-row items-center justify-between mt-6 text-sm text-gray-400">
-          <p>© 2025 FoodExpress. All rights reserved.</p>
+          <p>© 2025 Food. All rights reserved.</p>
 
           {/* Social Icons */}
           <div className="flex gap-4 mt-4 md:mt-0">

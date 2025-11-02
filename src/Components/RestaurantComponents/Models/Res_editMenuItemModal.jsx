@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 
 const Res_editMenuItemModal = ({ item }) => {
-   const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState({
     name: "",
     price: "",
     category: "",
@@ -9,7 +9,8 @@ const Res_editMenuItemModal = ({ item }) => {
     preview: null,
   });
 
-  const fileInputRef = useRef(null); // reference to file input
+  const [errors, setErrors] = useState({});
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     setFormData({
@@ -17,10 +18,9 @@ const Res_editMenuItemModal = ({ item }) => {
       price: item?.price || "",
       category: item?.category || "",
       image: item?.image || null,
-      preview: null, // reset preview when switching items
+      preview: null,
     });
 
-    // clear file input field when switching items
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -43,9 +43,46 @@ const Res_editMenuItemModal = ({ item }) => {
     }
   };
 
+  // ✅ Validation (same logic as your add modal)
+  const validate = () => {
+    const newErrors = {};
+
+    // Name validation
+    if (!formData.name.trim()) {
+      newErrors.name = "Name is required.";
+    } else if (!/^[A-Za-z\s]+$/.test(formData.name)) {
+      newErrors.name = "Name should contain only letters and spaces.";
+    }
+
+    // Price validation
+    if (!formData.price) {
+      newErrors.price = "Price is required.";
+    } else if (Number(formData.price) <= 0) {
+      newErrors.price = "Price must be a positive number.";
+    }
+
+    // Category validation
+    if (!formData.category.trim()) {
+      newErrors.category = "Category is required.";
+    } else if (!/^[A-Za-z\s]+$/.test(formData.category)) {
+      newErrors.category = "Category should contain only letters and spaces.";
+    }
+
+    // Logo (image) validation
+    if (!formData.image) {
+      newErrors.image = "Logo is required.";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    // console.log("updated data is: ", formData);
+
+    if (!validate()) return;
+
+    // console.log("Updated data:", formData);
     document.getElementById("edit_menu_modal").close();
   };
 
@@ -55,18 +92,24 @@ const Res_editMenuItemModal = ({ item }) => {
         <h3 className="font-bold text-lg mb-4 text-gray-800">Edit Menu Item</h3>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
+          {/* Name */}
           <div>
             <label className="block text-sm font-medium mb-1">Name</label>
             <input
               type="text"
-              requ
               name="name"
               value={formData.name}
               onChange={handleChange}
-              required
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blueBtn focus:outline-none"
+              className={`w-full border ${
+                errors.name ? "border-red-500" : "border-gray-300"
+              } rounded-md px-3 py-2 focus:ring-2 focus:ring-blueBtn focus:outline-none`}
             />
+            {errors.name && (
+              <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+            )}
           </div>
+
+          {/* Price */}
           <div>
             <label className="block text-sm font-medium mb-1">Price</label>
             <input
@@ -74,10 +117,16 @@ const Res_editMenuItemModal = ({ item }) => {
               name="price"
               value={formData.price}
               onChange={handleChange}
-              required
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blueBtn focus:outline-none"
+              className={`w-full border ${
+                errors.price ? "border-red-500" : "border-gray-300"
+              } rounded-md px-3 py-2 focus:ring-2 focus:ring-blueBtn focus:outline-none`}
             />
+            {errors.price && (
+              <p className="text-red-500 text-sm mt-1">{errors.price}</p>
+            )}
           </div>
+
+          {/* Category */}
           <div>
             <label className="block text-sm font-medium mb-1">Category</label>
             <input
@@ -85,23 +134,33 @@ const Res_editMenuItemModal = ({ item }) => {
               name="category"
               value={formData.category}
               onChange={handleChange}
-              required
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blueBtn focus:outline-none"
+              className={`w-full border ${
+                errors.category ? "border-red-500" : "border-gray-300"
+              } rounded-md px-3 py-2 focus:ring-2 focus:ring-blueBtn focus:outline-none`}
             />
+            {errors.category && (
+              <p className="text-red-500 text-sm mt-1">{errors.category}</p>
+            )}
           </div>
-          {/* image */}
+
+          {/* Logo */}
           <div>
             <label className="block text-sm font-medium mb-1">Logo</label>
             <input
               type="file"
               name="image"
               accept="image/*"
-              ref={fileInputRef} 
+              ref={fileInputRef}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blueBtn file:text-white hover:file:bg-blue-500"
+              className={`w-full border ${
+                errors.image ? "border-red-500" : "border-gray-300"
+              } rounded-md px-3 py-2 file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blueBtn file:text-white hover:file:bg-blue-500`}
             />
+            {errors.image && (
+              <p className="text-red-500 text-sm mt-1">{errors.image}</p>
+            )}
 
-            {/* preview */}
+            {/* Preview */}
             {formData.preview && (
               <img
                 src={formData.preview}
@@ -109,7 +168,6 @@ const Res_editMenuItemModal = ({ item }) => {
                 className="w-20 h-20 rounded mt-2 object-cover border"
               />
             )}
-
             {!formData.preview &&
               formData.image &&
               typeof formData.image === "string" && (
@@ -121,6 +179,7 @@ const Res_editMenuItemModal = ({ item }) => {
               )}
           </div>
 
+          {/* Buttons */}
           <div className="flex justify-end gap-3 pt-2">
             <button
               type="button"

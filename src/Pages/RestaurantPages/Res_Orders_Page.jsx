@@ -1,51 +1,65 @@
-import React from "react";
+import React, { useState } from "react";
 import Res_orderHeader from "../../Components/RestaurantComponents/Res_orderHeader";
 import Res_orderTable from "../../Components/RestaurantComponents/Res_orderTable";
+import { ordersData as initialOrders } from "../../Components/Dummy Data/DummyData";
 
 const Res_Orders_Page = () => {
- const dummyOrderData = [
-  {
-    id: "#1001",
-    customer: "John Doe",
-    phone: "12896756145",
-    address: "Main city 123 Lahore",
-    total: 1200,
-    status: "Pending",
-    timeAgo:"10 min ago"
-  },
-  {
-    id: "#1002",
-    customer: "Ali Khan",
-    phone: "923004567890",
-    address: "DHA Phase 5, Karachi",
-    total: 2500,
-    status: "Preparing",
-    timeAgo:"10 min ago"
-  },
-  {
-    id: "#1003",
-    customer: "Sarah Ahmed",
-    phone: "923123456789",
-    address: "Johar Town, Lahore",
-    total: 1800,
-    status: "On the way",
-    timeAgo:"10 min ago"
-  },
-  {
-    id: "#1004",
-    customer: "Ahmed Raza",
-    phone: "923009876543",
-    address: "Gulberg, Islamabad",
-    total: 3200,
-    status: "Delivered",
-    timeAgo:"10 min ago"
-  },
-];
+  const orderStatus = [
+    "All",
+    "pending",
+    "confirmed",
+    "preparing",
+    "arriving",
+    "delivered",
+  ];
+
+  const [ordersData, setOrdersData] = useState(initialOrders);
+  const [activeStatus, setActiveStatus] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleBtnClick = (text) => setActiveStatus(text);
+
+  // ✅ This handles filtering dynamically
+  const filteredData = ordersData.filter((order) => {
+    const matchesStatus =
+      activeStatus === "All" || order.status === activeStatus;
+
+    const query = searchQuery.toLowerCase();
+    const matchesSearch =
+      order.customerId?.name?.toLowerCase().includes(query) ||
+      order.customerId?.phone?.toLowerCase().includes(query) ||
+      order.deliveryAddress?.toLowerCase().includes(query) ||
+      order.status?.toLowerCase().includes(query) ||
+      order.paymentStatus?.toLowerCase().includes(query) ||
+      order.totalPrice?.toString().includes(query) ||
+      order.timeAgo?.toLowerCase().includes(query);
+
+    return matchesStatus && matchesSearch;
+  });
+
+  // ✅ Function to handle dropdown status change (passed to child)
+  const handleStatusChange = (id, newStatus) => {
+    setOrdersData((prev) =>
+      prev.map((order) =>
+        order._id === id ? { ...order, status: newStatus.toLowerCase() } : order
+      )
+    );
+  };
 
   return (
     <div className="flex flex-col gap-6">
-      <Res_orderHeader />
-      <Res_orderTable dummyOrderData={dummyOrderData}/>
+      <Res_orderHeader
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        statuses={orderStatus}
+        activeStatus={activeStatus}
+        handleBtnClick={handleBtnClick}
+      />
+      
+      <Res_orderTable
+        ordersData={filteredData}
+        onStatusChange={handleStatusChange}
+      />
     </div>
   );
 };

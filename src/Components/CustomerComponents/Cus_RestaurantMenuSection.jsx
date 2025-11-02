@@ -3,6 +3,16 @@ import Cus_MenuItemCard from "./Cus_Cards/Cus_MenuItemCard";
 import { groupByCategory } from "../utility/helperFunctions";
 
 const Cus_RestaurantMenuSection = ({ menuItems }) => {
+  if (!menuItems || menuItems.length === 0) {
+    return (
+      <div className="flex justify-center items-center py-20">
+        <p className="text-gray-500 text-lg font-medium">
+          No menu items found.
+        </p>
+      </div>
+    );
+  }
+
   const groupedMenu = groupByCategory(menuItems);
 
   return (

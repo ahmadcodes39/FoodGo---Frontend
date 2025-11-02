@@ -1,14 +1,20 @@
 import { ChefHat } from "lucide-react";
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
 
-const Admin_Login_Page = () => {
-  // -------------------- STATES --------------------
+const CommonLoginPage = ({ role }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [heading, setHeading] = useState("");
 
-  // -------------------- HANDLER --------------------
-  const handleFormSubmission = (e) => {
+  useEffect(() => {
+    if (role === "admin") setHeading("Admin");
+    else if (role === "complaint-manager") setHeading("Complaint Manager");
+    else if (role === "verification-manager")
+      setHeading("Verification Manager");
+    else setHeading("User");
+  }, [role]);
+
+  const handleFormSubmission = async (e) => {
     e.preventDefault();
   };
 
@@ -20,7 +26,7 @@ const Admin_Login_Page = () => {
         </h1>
 
         <h2 className="text-3xl font-extrabold text-center text-gray-800 mb-1">
-          Admin Login
+          {heading}
         </h2>
         <p className="text-sm text-center text-gray-500 mb-6">
           Welcome back! Please sign in to your account.
@@ -53,6 +59,18 @@ const Admin_Login_Page = () => {
             />
           </div>
 
+          {(role === "complaint-manager" ||
+            role === "verification-manager") && (
+            <label className="cursor-pointer flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={true}
+                className="checkbox checkbox-warning"
+              />
+              <span className="label-text">Login as {heading}</span>
+            </label>
+          )}
+
           <button
             type="submit"
             className="w-full bg-orange-500 text-white py-2 rounded-md font-medium hover:bg-orange-600 transition"
@@ -65,4 +83,4 @@ const Admin_Login_Page = () => {
   );
 };
 
-export default Admin_Login_Page;
+export default CommonLoginPage;

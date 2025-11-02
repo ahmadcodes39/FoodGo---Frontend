@@ -3,37 +3,61 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 
 const Login_Page = () => {
-  // -------------------- STATES --------------------
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("customer"); // default role
+  const [role, setRole] = useState("customer");
+  const [errors, setErrors] = useState({
+    name: "",
+    email: "",
+    password: "",
+    role: "",
+  });
 
-  // -------------------- HANDLER --------------------
+  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const validatePassword = (password) => password.length >= 6;
+    const validateName = (name) => /^[A-Za-z\s]{3,}$/.test(name.trim());
+
   const handleFormSubmission = (e) => {
     e.preventDefault();
+    let valid = true;
+    const newErrors = { name: "", email: "", password: "", role: "" };
 
-    const formData = {
-      role,
-      email,
-      password,
-    };
-
-    if (role === "customer") {
-      console.log("submission for customer:", formData);
-    } else if (role === "restaurant owner") {
-      console.log("submission for restaurant owner:", formData);
+      if (!validateName(name)) {
+      newErrors.name =
+        "Name must be at least 3 characters and contain only letters and spaces.";
+      valid = false;
     }
+
+    if (!validateEmail(email)) {
+      newErrors.email = "Please enter a valid email address.";
+      valid = false;
+    }
+
+    if (!validatePassword(password)) {
+      newErrors.password = "Password must be at least 6 characters long.";
+      valid = false;
+    }
+
+    if (!role) {
+      newErrors.role = "Please select a role.";
+      valid = false;
+    }
+
+    setErrors(newErrors);
+    if (!valid) return;
+
+    const formData = { name, role, email, password };
+    console.log(`Form submission for ${role}:`, formData);
   };
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
       <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-md">
-        {/* Brand */}
         <h1 className="flex items-center gap-2 justify-center text-3xl font-bold text-center text-orange-500 mb-2">
           FoodGo <ChefHat size={32} />
         </h1>
 
-        {/* Heading */}
         <h2 className="text-3xl font-extrabold text-center text-gray-800 mb-1">
           Login
         </h2>
@@ -41,22 +65,44 @@ const Login_Page = () => {
           Welcome back! Please sign in to your account.
         </p>
 
-        {/* Form */}
         <form onSubmit={handleFormSubmission} className="space-y-4">
-          {/* Role Selector */}
+          <div>
+            <label className="block text-gray-700 text-sm mb-1">Name</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Your Name"
+              className={`w-full border rounded-md px-3 py-2 outline-none focus:ring-2 ${
+                errors.name
+                  ? "focus:ring-red-500 border-red-500"
+                  : "focus:ring-orange-400"
+              }`}
+            />
+            {errors.name && (
+              <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+            )}
+          </div>
+
           <div>
             <label className="block text-gray-700 text-sm mb-1">Role</label>
             <select
               value={role}
               onChange={(e) => setRole(e.target.value)}
-              className="w-full border rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-orange-400"
+              className={`w-full border rounded-md px-3 py-2 outline-none focus:ring-2 ${
+                errors.role
+                  ? "focus:ring-red-500 border-red-500"
+                  : "focus:ring-orange-400"
+              }`}
             >
               <option value="customer">Customer</option>
               <option value="restaurant owner">Restaurant Owner</option>
             </select>
+            {errors.role && (
+              <p className="text-red-500 text-sm mt-1">{errors.role}</p>
+            )}
           </div>
 
-          {/* Email */}
           <div>
             <label className="block text-gray-700 text-sm mb-1">
               Email Address
@@ -66,12 +112,17 @@ const Login_Page = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="w-full border rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-orange-400"
-              required
+              className={`w-full border rounded-md px-3 py-2 outline-none focus:ring-2 ${
+                errors.email
+                  ? "focus:ring-red-500 border-red-500"
+                  : "focus:ring-orange-400"
+              }`}
             />
+            {errors.email && (
+              <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+            )}
           </div>
 
-          {/* Password */}
           <div>
             <label className="block text-gray-700 text-sm mb-1">Password</label>
             <input
@@ -79,12 +130,17 @@ const Login_Page = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="********"
-              className="w-full border rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-orange-400"
-              required
+              className={`w-full border rounded-md px-3 py-2 outline-none focus:ring-2 ${
+                errors.password
+                  ? "focus:ring-red-500 border-red-500"
+                  : "focus:ring-orange-400"
+              }`}
             />
+            {errors.password && (
+              <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+            )}
           </div>
 
-          {/* Submit */}
           <button
             type="submit"
             className="w-full bg-orange-500 text-white py-2 rounded-md font-medium hover:bg-orange-600 transition"
@@ -93,10 +149,12 @@ const Login_Page = () => {
           </button>
         </form>
 
-        {/* Footer */}
         <p className="text-center text-sm text-gray-600 mt-6">
           Don’t have an account?{" "}
-          <Link to="/create-account" className="text-orange-500 hover:underline">
+          <Link
+            to="/create-account"
+            className="text-orange-500 hover:underline"
+          >
             Sign up
           </Link>
         </p>

@@ -1,11 +1,12 @@
 import { Eye } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-const Ad_RestaurantTable = ({ data }) => {
+const Ad_RestaurantTable = ({ data, isauthorize = true, adminNavigate ,  basePath = "admin" }) => {
   const [restaurantsData, setRestaurantData] = useState([]);
-
+  const navigate = useNavigate();
   useEffect(() => {
-    setRestaurantData(data || []); 
+    setRestaurantData(data || []);
   }, [data]);
 
   const statusColors = {
@@ -23,6 +24,7 @@ const Ad_RestaurantTable = ({ data }) => {
   };
 
   const handleBtnClick = (item) => {
+     navigate(`/${basePath}/${item.id}/restaurant-info`);
     console.log("requested restaurant ", item);
   };
 
@@ -68,7 +70,7 @@ const Ad_RestaurantTable = ({ data }) => {
                 <td>
                   <span className="flex flex-col gap-1">
                     {restaurant.ownerId.name}
-                    {restaurant.ownerId.email}
+                    {restaurant.ownerId.email.slice(0, 15)}
                   </span>
                 </td>
 
@@ -97,17 +99,19 @@ const Ad_RestaurantTable = ({ data }) => {
                       <Eye size={15} />
                       View
                     </button>
-                    <select
-                      value={restaurant.status}
-                      onChange={(e) =>
-                        handleStatusChange(restaurant.id, e.target.value)
-                      }
-                      className="select select-sm border-gray-300 rounded-md"
-                    >
-                      <option value="Pending">Pending</option>
-                      <option value="Approved">Approved</option>
-                      <option value="Rejected">Rejected</option>
-                    </select>
+                    {isauthorize && (
+                      <select
+                        value={restaurant.status}
+                        onChange={(e) =>
+                          handleStatusChange(restaurant.id, e.target.value)
+                        }
+                        className="select select-sm border-gray-300 rounded-md"
+                      >
+                        <option value="Pending">Pending</option>
+                        <option value="Approved">Approved</option>
+                        <option value="Rejected">Rejected</option>
+                      </select>
+                    )}
                   </div>
                 </td>
               </tr>

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { ArrowRight, ArrowLeft } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const foodImages = [
   { src: "landing 1.jpg", alt: "Gourmet burger with fries" },
@@ -16,23 +17,25 @@ const Hero = () => {
   const nextSlide = () => setCurrent((prev) => (prev + 1) % total);
 
   return (
-    <div className="bg-[#fff7f2] min-h-[80vh] flex-col md:flex items-center justify-center px-10 py-16">
+    <div className="bg-[#fff7f2]  md:min-h-[80vh] flex-col md:flex items-center justify-center px-10 md:py-16">
       <div className="max-w-7xl w-full grid md:grid-cols-2 gap-10 items-center mt-20">
         {/* Left Section */}
         <div>
           <h1 className="text-5xl font-extrabold leading-snug">
-            Delicious food, <span className="text-orange-500">delivered fast</span>
+            Delicious food,{" "}
+            <span className="text-orange-500">delivered fast</span>
           </h1>
           <p className="mt-6 text-gray-600 text-lg">
-            Order meals in minutes or grow your restaurant business with our platform
+            Order meals in minutes or grow your restaurant business with our
+            platform
           </p>
           <div className="mt-8 flex flex-col md:flex-row gap-4">
-            <button className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-3 rounded-md flex items-center gap-2">
+            <Link to={"/create-account"} className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-3 rounded-md flex items-center gap-2">
               Order Now <ArrowRight size={18} />
-            </button>
-            <button className="bg-green-500 hover:bg-green-600 text-white font-semibold px-6 py-3 rounded-md">
+            </Link >
+            <Link to={"/create-account"} className="bg-green-500 hover:bg-green-600 text-white font-semibold px-6 py-3 rounded-md">
               Register Restaurant
-            </button>
+            </Link>
           </div>
         </div>
 
@@ -48,22 +51,22 @@ const Hero = () => {
                 key={idx}
                 src={image.src}
                 alt={image.alt}
-                className="w-full h-96 md:h-[300px] object-cover flex-shrink-0"
+                className="w-full h-60 sm:h-72 md:h-[300px] object-cover flex-shrink-0 rounded-lg"
               />
             ))}
           </div>
 
           {/* Buttons */}
-          <div className="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 justify-between">
+          <div className="absolute left-3 right-3 top-1/2 flex -translate-y-1/2 justify-between md:left-5 md:right-5">
             <button
               onClick={prevSlide}
-              className="btn btn-circle hover:bg-orange-500 hover:text-white transition"
+              className="bg-white hover:bg-orange-500 text-gray-700 hover:text-white w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full shadow transition"
             >
               ❮
             </button>
             <button
               onClick={nextSlide}
-              className="btn btn-circle hover:bg-orange-500 hover:text-white transition"
+              className="bg-white hover:bg-orange-500 text-gray-700 hover:text-white w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full shadow transition"
             >
               ❯
             </button>

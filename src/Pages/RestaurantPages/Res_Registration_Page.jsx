@@ -26,55 +26,75 @@ const Res_Registration_Page = () => {
     }));
   };
 
-  const validateForm = () => {
-    let newErrors = {};
+ const validateForm = () => {
+  let newErrors = {};
 
-    if (!formData.name.trim()) {
-      newErrors.name = "Restaurant name is required";
-    }
+  // ✅ Restaurant Name Validation
+  if (!formData.name.trim()) {
+    newErrors.name = "Restaurant name is required.";
+  } else if (!/^[A-Za-z\s]+$/.test(formData.name.trim())) {
+    newErrors.name = "Restaurant name must contain only letters and spaces.";
+  } else if (formData.name.trim().length < 3) {
+    newErrors.name = "Restaurant name must be at least 3 characters long.";
+  }
 
-    if (!/^[0-9]{10,15}$/.test(formData.restaurantPhoneNumber)) {
-      newErrors.restaurantPhoneNumber = "Phone number must be 10–15 digits";
-    }
+  // ✅ Phone Number Validation (Only digits, start with 03, 11 digits)
+  const phone = formData.restaurantPhoneNumber.trim();
+  if (!/^03\d{9}$/.test(phone)) {
+    newErrors.restaurantPhoneNumber =
+      "Phone number must start with 03 and contain exactly 11 digits (no spaces or letters).";
+  }
 
-    if (!formData.address.trim()) {
-      newErrors.address = "Address is required";
-    }
+  // ✅ Address Validation
+  if (!formData.address.trim()) {
+    newErrors.address = "Address is required.";
+  }
 
-    if (!formData.logo) {
-      newErrors.logo = "Restaurant logo is required";
-    }
+  // ✅ Logo and License Required
+  if (!formData.logo) {
+    newErrors.logo = "Restaurant logo is required.";
+  }
 
-    if (!formData.license) {
-      newErrors.license = "Restaurant license is required";
-    }
+  if (!formData.license) {
+    newErrors.license = "Restaurant license is required.";
+  }
 
-    if (!formData.cuisine.trim()) {
-      newErrors.cuisine = "At least one cuisine is required";
-    }
+  // ✅ Cuisine Validation (must be comma-separated entries)
+  if (!formData.cuisine.trim()) {
+    newErrors.cuisine = "At least one cuisine is required.";
+  } else if (!/^([A-Za-z\s]+)(,\s*[A-Za-z\s]+)*$/.test(formData.cuisine.trim())) {
+    newErrors.cuisine =
+      "Cuisine entries must be comma-separated words (e.g., Italian, Chinese, Pakistani).";
+  }
 
-    if (formData.description.length > 500) {
-      newErrors.description = "Description must be less than 500 characters";
-    }
+  // ✅ Description Validation (10–500 chars)
+  const descLength = formData.description.trim().length;
+  if (descLength < 10) {
+    newErrors.description = "Description must be at least 10 characters long.";
+  } else if (descLength > 500) {
+    newErrors.description = "Description must not exceed 500 characters.";
+  }
 
-    // Opening hours validation
-    const openingHoursRegex =
-      /^([1-9]|1[0-2])(:[0-5][0-9])?\s?(AM|PM)\s*-\s*([1-9]|1[0-2])(:[0-5][0-9])?\s?(AM|PM)$/i;
-    if (!formData.openingHours.trim()) {
-      newErrors.openingHours = "Opening hours are required";
-    } else if (!openingHoursRegex.test(formData.openingHours)) {
-      newErrors.openingHours =
-        "Invalid format. Example: '9AM - 11PM' or '10:30AM - 8:15PM'";
-    }
+  // ✅ Opening Hours Validation (like 9AM-11PM or 10:30AM - 8:15PM)
+  const openingHoursRegex =
+    /^([1-9]|1[0-2])(:[0-5][0-9])?\s?(AM|PM)\s*-\s*([1-9]|1[0-2])(:[0-5][0-9])?\s?(AM|PM)$/i;
+  if (!formData.openingHours.trim()) {
+    newErrors.openingHours = "Opening hours are required.";
+  } else if (!openingHoursRegex.test(formData.openingHours.trim())) {
+    newErrors.openingHours =
+      "Invalid format. Example: '9AM-11PM' or '10:30AM - 8:15PM'.";
+  }
 
-    if (formData.deliveryAvailable && !formData.deliveryTime.trim()) {
-      newErrors.deliveryTime =
-        "Please specify delivery time if delivery is available";
-    }
+  // ✅ Delivery Time (required if delivery available)
+  if (formData.deliveryAvailable && !formData.deliveryTime.trim()) {
+    newErrors.deliveryTime =
+      "Please specify delivery time if delivery is available.";
+  }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  setErrors(newErrors);
+  return Object.keys(newErrors).length === 0;
+};
+
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -92,7 +112,7 @@ const Res_Registration_Page = () => {
       <div className="card w-full max-w-2xl bg-white shadow-xl">
         <div className="card-body">
           <h2 className="card-title text-2xl font-bold text-orange-500">
-            Register Your Restaurant <ChefHat size={28} />
+            Register Your Restaurant <ChefHat size={28} className="hidden md:inline" />
           </h2>
           <p className="text-gray-600 mb-4">
             Fill in the details below to register your restaurant.
@@ -277,7 +297,7 @@ const Res_Registration_Page = () => {
             </div>
 
             {/* Delivery Options */}
-            <div className="flex items-center gap-4">
+            <div className="md:flex-row flex-col items-center gap-4">
               <label className="cursor-pointer flex items-center gap-2">
                 <input
                   type="checkbox"
@@ -296,7 +316,7 @@ const Res_Registration_Page = () => {
                     value={formData.deliveryTime}
                     onChange={handleChange}
                     placeholder="e.g., 30-40 mins"
-                    className={`input w-full ${
+                    className={`input w-full md:mt-0 mt-5 ${
                       errors.deliveryTime
                         ? "input-error"
                         : "focus:ring-2 focus:ring-orange-400"

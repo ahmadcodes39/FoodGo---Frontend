@@ -4,17 +4,13 @@ import { PlusCircle, Search } from "lucide-react";
 import Res_menuItemModal from "./Models/Res_menuItemModel";
 import TopHeading from "../Common/TopHeading";
 import FilterHeader from "../Common/FilterHeader";
-const Res_menuHeader = () => {
-  const menuStats = ["All", "Piza", "Pasta", "salad", "desert", "frink"];
-
-  const [activeStatus, setActiveStatus] = useState("All");
-  const [searchQuery, setSearchQuery] = useState("");
-
-  const handleBtnClick = (text) => {
-    setActiveStatus(text);
-    console.log(`btn clicked ${text}`);
-  };
-  console.log("search query: ",searchQuery)
+const Res_menuHeader = ({
+  activeStatus,
+  menuStats,
+  handleBtnClick,
+  searchQuery,
+  setSearchQuery,
+}) => {
   return (
     <div className="flex flex-col p-4 bg-background-light ">
       <div className="flex items-center justify-between">
@@ -27,7 +23,7 @@ const Res_menuHeader = () => {
              focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2
              transition-transform duration-150"
         >
-          <PlusCircle size={19} /> Add Menu
+          <PlusCircle size={19} className="hidden md:inline" /> Add Menu
         </button>
       </div>
       <FilterHeader

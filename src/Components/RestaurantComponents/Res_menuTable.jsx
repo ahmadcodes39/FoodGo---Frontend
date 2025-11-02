@@ -4,27 +4,35 @@ import Res_deleteItemModal from "./Models/Res_deleteItemModal";
 import Res_menuItemModal from "./Models/Res_menuItemModel";
 import Res_editMenuItemModal from "./Models/Res_editMenuItemModal";
 
-const Res_menuTable = ({ dummyMenuData }) => {
-  const [menuItems, setMenuItems] = useState(dummyMenuData);
+const Res_menuTable = ({ dummyMenuData, isActionAvailable = true }) => {
+  // const [menuItems, setMenuItems] = useState(dummyMenuData);
   const [deleteItem, setDeleteItem] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
 
   const handleActionClick = (action, item) => {
     if (action === "Delete") {
       setDeleteItem(item);
-      document.getElementById("delete_modal").showModal();
+      setTimeout(() => {
+        document.getElementById("delete_modal").showModal();
+      }, 0);
     } else if (action === "Edit") {
       setSelectedItem(item);
-      document.getElementById("edit_menu_modal").showModal();
+      setTimeout(() => {
+        document.getElementById("edit_menu_modal").showModal();
+      }, 0);
     } else if (action === "Add") {
       setSelectedItem(null);
-      document.getElementById("menu_modal").showModal();
+      setTimeout(() => {
+        document.getElementById("menu_modal").showModal();
+      }, 0);
     }
   };
 
   const handleDeleteClick = () => {
-    setMenuItems((prev) => prev.filter((i) => i.id !== deleteItem.id));
-    document.getElementById("delete_modal").close();
+    // setMenuItems((prev) => prev.filter((i) => i.id !== deleteItem.id));
+    setTimeout(() => {
+      document.getElementById("delete_modal").close();
+    }, 0);
   };
 
   return (
@@ -40,21 +48,21 @@ const Res_menuTable = ({ dummyMenuData }) => {
           </tr>
         </thead>
         <tbody>
-          {menuItems.length <= 0 ? (
+          {dummyMenuData.length <= 0 ? (
             <tr>
               <td colSpan="5" className="text-center py-6 text-gray-500">
                 No menu items found
               </td>
             </tr>
           ) : (
-            menuItems.map((item) => (
+            dummyMenuData.map((item) => (
               <tr key={item.id} className="hover:bg-gray-50">
                 <td>
-                  <div className="flex items-center gap-3">
+                  <div className="flex lg:flex-row flex-col items-center gap-3">
                     <img
                       src={item.image}
                       alt={item.name}
-                      className="w-20 h-20 object-cover rounded-md"
+                      className="w-10 h-10 object-cover rounded-md"
                     />
                     <span className="font-medium">{item.name}</span>
                   </div>
@@ -68,25 +76,26 @@ const Res_menuTable = ({ dummyMenuData }) => {
                     Active
                   </span>
                 </td>
-
-                <td>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleActionClick("Edit", item)}
-                      className="flex items-center gap-2 px-3 py-1 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
-                    >
-                      <Edit size={15} />
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleActionClick("Delete", item)}
-                      className="flex items-center gap-2 px-3 py-1 text-sm bg-red-500 text-white rounded-md hover:bg-red-600 transition"
-                    >
-                      <Trash2 size={15} />
-                      Delete
-                    </button>
-                  </div>
-                </td>
+                  <td>
+                    <div className="flex gap-2">
+                {isActionAvailable && (
+                      <button
+                        onClick={() => handleActionClick("Edit", item)}
+                        className="flex items-center gap-2 px-3 py-1 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
+                      >
+                        <Edit size={15} />
+                        Edit
+                      </button>
+                    )}
+                      <button
+                        onClick={() => handleActionClick("Delete", item)}
+                        className="flex items-center gap-2 px-3 py-1 text-sm bg-red-500 text-white rounded-md hover:bg-red-600 transition"
+                      >
+                        <Trash2 size={15} />
+                        Delete
+                      </button>
+                    </div>
+                  </td>
               </tr>
             ))
           )}

@@ -10,10 +10,11 @@ import {
   PackageIcon,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { complaints } from "../../Components/Dummy Data/DummyData";
 import Ad_KpiCards from "../../Components/AdminComponents/Cards/Ad_kpiCards";
 import Ad_actionCards from "../../Components/AdminComponents/Cards/Ad_actionCards";
-import { useNavigate } from "react-router-dom";
-import Ad_revenueCharts from "../../Components/AdminComponents/Charts/Ad_revenueCharts";
+import { Link, useNavigate } from "react-router-dom";
+import ShowLineChart from "../../Components/Common/Charts/ShowLineChart";
 import QuickActions from "../../Components/Common/QuickActions";
 import Ad_ComplaintsTable from "../../Components/AdminComponents/Ad_ComplaintsTable";
 
@@ -21,6 +22,7 @@ const Ad_Dashboard_Page = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("Weekly");
   const tabs = ["Weekly", "Monthly", "Yearly"];
+
   const handleActionClick = (action) => {
     if (action === "reviewRestaurants") {
       navigate("/admin/restaurants");
@@ -30,7 +32,6 @@ const Ad_Dashboard_Page = () => {
       console.log("Navigate to active orders page");
     }
   };
-
   const generalStats = [
     {
       title: "Total Customers",
@@ -152,120 +153,30 @@ const Ad_Dashboard_Page = () => {
       link: "/admin/complaints",
     },
   ];
-  const complaints = [
-  {
-    _id: "64b92f0a8d3b5e1c7a9f1234",
-    raisedBy: "John Doe",
-    against: "Pizza Hut",
-    orderId: "ORD123",
-    reason: "Late delivery of order",
-    complaintStatus: "Customer",
-    status: "Pending",
-  },
-  {
-    _id: "64b92f0a8d3b5e1c7a9f5678",
-    raisedBy: "Alice Smith",
-    against: "Burger King",
-    orderId: "ORD456",
-    reason: "Received wrong items",
-    complaintStatus: "Customer",
-    status: "Resolved",
-  },
-  {
-    _id: "64b92f0a8d3b5e1c7a9f9876",
-    raisedBy: "Michael Lee",
-    against: "KFC",
-    orderId: "ORD789",
-    reason: "Food was cold",
-    complaintStatus: "Restaurant",
-    status: "Pending",
-  },
-  {
-    _id: "64b92f0a8d3b5e1c7a9f1111",
-    raisedBy: "Sarah Johnson",
-    against: "McDonald's",
-    orderId: "ORD101",
-    reason: "Overcharged for items",
-    complaintStatus: "Customer",
-    status: "Pending",
-  },
-  {
-    _id: "64b92f0a8d3b5e1c7a9f2222",
-    raisedBy: "David Kim",
-    against: "Domino's Pizza",
-    orderId: "ORD202",
-    reason: "Rude delivery person",
-    complaintStatus: "Customer",
-    status: "Resolved",
-  },
-  {
-    _id: "64b92f0a8d3b5e1c7a9f3333",
-    raisedBy: "Emily Brown",
-    against: "Subway",
-    orderId: "ORD303",
-    reason: "Order was cancelled without notice",
-    complaintStatus: "Customer",
-    status: "Pending",
-  },
-  {
-    _id: "64b92f0a8d3b5e1c7a9f4444",
-    raisedBy: "Tom Wilson",
-    against: "Taco Bell",
-    orderId: "ORD404",
-    reason: "Packaging was damaged",
-    complaintStatus: "Restaurant",
-    status: "Resolved",
-  },
-  {
-    _id: "64b92f0a8d3b5e1c7a9f5555",
-    raisedBy: "Sophia Martinez",
-    against: "Starbucks",
-    orderId: "ORD505",
-    reason: "Items missing from order",
-    complaintStatus: "Customer",
-    status: "Pending",
-  },
-  {
-    _id: "64b92f0a8d3b5e1c7a9f6666",
-    raisedBy: "Chris Evans",
-    against: "Dunkin Donuts",
-    orderId: "ORD606",
-    reason: "Poor food quality",
-    complaintStatus: "Customer",
-    status: "Resolved",
-  },
-  {
-    _id: "64b92f0a8d3b5e1c7a9f7777",
-    raisedBy: "Olivia Taylor",
-    against: "Five Guys",
-    orderId: "ORD707",
-    reason: "Wrong customization in order",
-    complaintStatus: "Customer",
-    status: "Pending",
-  },
-];
 
 
   return (
-    <div className="p-4 flex flex-col  bg-background-light">
+    <div className="py-2 px-4 flex flex-col bg-background-light">
       <div className="flex items-center justify-between">
         <TopHeading title={"Admin Dashboard"} />
-        <button className="btn btn-sm bg-redBtn rounded-md text-white hover:bg-red-600 text-sm flex gap-2">
-          <LogOutIcon size={15} /> Logout
+        <Link to={"/admin/login"}>
+        <button className="btn btn-sm sm:btn-md  bg-redBtn rounded-md text-white hover:bg-red-600 text-sm flex gap-2">
+          <LogOutIcon size={15} className="hidden sm:inline" /> Logout
         </button>
+        </Link>
       </div>
-      <div className="bg-gray-100 p-4 min-w-full shadow-md rounded-md">
+      <div className="bg-gray-100 mt-5 p-4 min-w-full shadow-md rounded-md">
         <p className="text-xl font-semibold">Welcome,</p>
         <p className="text-gray-500 text-sm">
           Her's what's happening with your app.
         </p>
       </div>
-      <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6">
+      <div className="mt-5 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
         {generalStats.map((stat, index) => (
           <Ad_KpiCards key={index} {...stat} />
         ))}
       </div>
-      <div className="grid md:grid-cols-2 mt-5 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 mt-5 gap-5">
         {actionCard.map((stat, index) => (
           <Ad_actionCards
             key={index}
@@ -274,7 +185,7 @@ const Ad_Dashboard_Page = () => {
           />
         ))}
       </div>
-      <div className="mt-10 flex justify-between items-center p-4">
+      <div className="mt-10 flex md:flex-row flex-col md:justify-between md:items-center p-4">
         <TopHeading title={"Revenue Overview"} />
         <div role="tablist" className="flex gap-2 bg-gray-100 p-1 rounded-lg">
           {tabs.map((tab) => (
@@ -300,7 +211,7 @@ const Ad_Dashboard_Page = () => {
         transition={{ duration: 0.4 }}
         className=""
       >
-        <Ad_revenueCharts data={dataMap[activeTab]} />
+        <ShowLineChart data={dataMap[activeTab]} lineColor={"#f97316"}/>
       </motion.div>
       <div className="mt-5">
         <TopHeading title={"Quick Actions"} />

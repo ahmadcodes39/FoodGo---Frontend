@@ -2,12 +2,13 @@ import React from "react";
 import { ChefHat, UtensilsCrossed } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
-const SideBar = ({ items, userInfo }) => {
+const SideBar = ({ items, userInfo,onItemClick }) => {
   return (
     <div className="w-64 flex flex-col justify-between shadow-2xl p-4 min-h-screen fixed top-0 left-0 bg-white">
       <div>
-        <h1 className="text-xl lg:pl-1 font-bold flex items-center gap-1 text-orange-500 mb-6">
-          <UtensilsCrossed />FoodGo
+        <h1 className="text-xl lg:pl-1 font-bold flex items-center justify-end  sm:justify-normal gap-1 text-orange-500 mb-6">
+          <UtensilsCrossed />
+          FoodGo
         </h1>
 
         <ul className="flex flex-col gap-2 w-full">
@@ -15,16 +16,26 @@ const SideBar = ({ items, userInfo }) => {
             <NavLink
               to={item.destination}
               key={index}
+                onClick={onItemClick}
               className={({ isActive }) =>
                 `flex items-center gap-2 rounded-md p-2 w-full transition-all duration-150 
-                ${
-                  isActive
-                    ? "bg-orange-500 text-white shadow-md"
-                    : "hover:bg-orange-300 hover:text-white text-gray-700"
-                }`
+        ${
+          isActive
+            ? "bg-orange-500 text-white shadow-md"
+            : "hover:bg-orange-300 hover:text-white text-gray-700"
+        }`
               }
             >
-              {item.icon} {item.title}
+              <div className="relative flex items-center">
+                <div className="relative">
+                  {item.icon}
+                  {/* 🔴 Red dot only if hasNotification */}
+                  {item.hasNotification && (
+                    <span className="absolute top-0 right-0 block w-2 h-2 bg-red-500 rounded-full"></span>
+                  )}
+                </div>
+              </div>
+              <span>{item.title}</span>
             </NavLink>
           ))}
         </ul>

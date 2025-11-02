@@ -1,4 +1,5 @@
 import React from "react";
+import { Package } from "lucide-react";
 
 const Cus_RestaurantHeader = ({ restaurant }) => {
   return (
@@ -53,14 +54,16 @@ const Cus_RestaurantHeader = ({ restaurant }) => {
             <span className="font-semibold">🚚 Delivery Time: </span>
             {restaurant.deliveryTime}
           </p>
-          <p>
-            <span className="font-semibold">Delivery Available: </span>
-            {restaurant.deliveryAvailable ? (
-              <span className="text-green-600">Yes</span>
-            ) : (
-              <span className="text-red-600">No</span>
-            )}
-          </p>
+          <p className="flex items-center gap-2">
+  <Package size={18} className="text-orange-500" />
+  <span className="font-semibold">Delivery Available:</span>
+  {restaurant.deliveryAvailable ? (
+    <span className="text-green-600">Yes</span>
+  ) : (
+    <span className="text-red-600">No</span>
+  )}
+</p>
+
         </div>
       </div>
     </div>

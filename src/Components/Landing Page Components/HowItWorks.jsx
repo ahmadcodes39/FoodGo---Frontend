@@ -33,6 +33,7 @@ const HowItWorks = () => {
       description: "Get your food delivered hot and fresh to your door",
     },
   ];
+
   const restaurantData = [
     {
       icon: Store,
@@ -53,32 +54,41 @@ const HowItWorks = () => {
       description: "Track orders and grow your business with insights",
     },
   ];
+
   return (
-    <>
-      <div className="flex items-center justify-center flex-col gap-3 mt-20">
+    <div className="px-4 sm:px-6 lg:px-20">
+      {/* Heading */}
+      <div className="flex flex-col items-center text-center gap-3 mt-20">
         <h1 className="font-bold text-3xl">How It Works</h1>
-        <p className="text-gray-500">
-          Simple steps to get started, whether you're ordering or managing a
-          restaurant
+        <p className="text-gray-500 max-w-xl">
+          Simple steps to get started, whether you're ordering or managing a restaurant
         </p>
-        <h1 className="mt-10 font-bold text-2xl ">
+      </div>
+
+      {/* Customer Section */}
+      <div className="mt-10 text-center">
+        <h2 className="font-bold text-2xl">
           For <span className="text-orange-500">Customers</span>
-        </h1>
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-5">
+          {customerCardsData.map((card, index) => (
+            <CustomCard key={index} {...card} />
+          ))}
+        </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20 mt-5">
-        {customerCardsData.map((card, index) => (
-          <CustomCard key={index} {...card} />
-        ))}
-      </div>
-      <h1 className="mt-5 font-bold text-2xl text-center">
+
+      {/* Restaurant Section */}
+      <div className="mt-10 text-center">
+        <h2 className="font-bold text-2xl">
           For <span className="text-green-500">Restaurant Owners</span>
-        </h1>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20 mt-5">
-        {restaurantData.map((card, index) => (
-          <CustomCard key={index} {...card} />
-        ))}
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-5 mb-20">
+          {restaurantData.map((card, index) => (
+            <CustomCard key={index} {...card} />
+          ))}
+        </div>
       </div>
-    </>
+    </div>
   );
 };
 

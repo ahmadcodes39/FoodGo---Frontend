@@ -7,22 +7,24 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  Legend,
 } from "recharts";
 
-
-const Ad_revenueCharts = ({data}) => {
+const ShowLineChart = ({ data, dataKey = "revenue", lineColor }) => {
   return (
-    <div className="w-full h-80 bg-white rounded-xl shadow-md p-4">
+    <div className="w-full h-80 bg-white rounded-xl shadow-md ">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="name" />
           <YAxis />
           <Tooltip />
+          <Legend />
+
           <Line
             type="monotone"
-            dataKey="revenue"
-            stroke="#f97316" // orange line
+            dataKey={dataKey}
+            stroke={lineColor} // orange line
             strokeWidth={3}
             dot={{ r: 5 }}
           />
@@ -32,4 +34,4 @@ const Ad_revenueCharts = ({data}) => {
   );
 };
 
-export default Ad_revenueCharts;
+export default ShowLineChart;
