@@ -1,48 +1,77 @@
 import React, { useRef, useState } from "react";
 import { Camera } from "lucide-react";
 import Header from "../../Components/Landing Page Components/Header";
+import { useEffect } from "react";
+import { useContext } from "react";
+import { AuthContext } from "../../App Global States/userAuthContext";
+import { updateProfile } from "../../api/authApi";
+import toast from "react-hot-toast";
+import Loading from "../../Components/LoadingSpinner/Loading";
+import { useNavigate } from "react-router-dom";
 
 const Cus_ProfileSetting_Page = () => {
+  const navigate = useNavigate()
+  const { user } = useContext(AuthContext);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    profilePic: "/compressed.jpeg",
-    fullName: "John Doe",
-    email: "john.doe@example.com",
-    phone: "03783267127",
-    password: "********",
-    confirmPassword: "********",
+    profilePic: "",
+    fullName: "",
+    email: "",
+    phone: "",
+    password: "",
+    confirmPassword: "",
   });
+
+  useEffect(() => {
+    // console.log(user);
+    setFormData({
+      profilePic: user?.profilePic,
+      fullName: user?.name,
+      email: user?.email,
+      phone: user?.phone,
+      password: user?.password,
+      confirmPassword: user?.password,
+    });
+  }, [user]);
 
   const [errors, setErrors] = useState({});
   const fileInputRef = useRef(null);
 
- const validate = () => {
-  const newErrors = {};
+  const validate = () => {
+    const newErrors = {};
 
-  if (formData.fullName.trim().length < 3)
-    newErrors.fullName = "Name must be at least 3 characters long.";
-  else if (!/^[A-Za-z\s]+$/.test(formData.fullName))
-    newErrors.fullName = "Name must contain only letters and spaces.";
+    if (formData.fullName.trim().length < 3)
+      newErrors.fullName = "Name must be at least 3 characters long.";
+    else if (!/^[A-Za-z\s]+$/.test(formData.fullName))
+      newErrors.fullName = "Name must contain only letters and spaces.";
 
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
-    newErrors.email = "Invalid email address.";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
+      newErrors.email = "Invalid email address.";
 
-  // ✅ Updated phone number validation
-  const phone = formData.phone.trim(); // remove leading/trailing spaces
-  if (!/^03\d{9}$/.test(phone))
-    newErrors.phone = "Phone number must start with 03 and contain exactly 11 digits (no spaces or letters).";
+    // ✅ Updated phone number validation
+    const phone = formData.phone.trim(); // remove leading/trailing spaces
+    if (!/^03\d{9}$/.test(phone))
+      newErrors.phone =
+        "Phone number must start with 03 and contain exactly 11 digits (no spaces or letters).";
 
-  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;
-  if (!passwordRegex.test(formData.password))
-    newErrors.password =
-      "Password must be at least 6 characters and include uppercase, lowercase, and a number.";
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;
 
-  if (formData.password !== formData.confirmPassword)
-    newErrors.confirmPassword = "Passwords do not match.";
+    // Only validate password if user entered something
+    if (formData.password) {
+      if (!passwordRegex.test(formData.password)) {
+        newErrors.password =
+          "Password must be at least 6 characters and include uppercase, lowercase, and a number.";
+      }
 
-  setErrors(newErrors);
-  return Object.keys(newErrors).length === 0;
-};
+      // Check confirm password only if password is entered
+      if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = "Passwords do not match.";
+      }
+    }
 
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleImageClick = () => fileInputRef.current.click();
 
@@ -62,10 +91,29 @@ const Cus_ProfileSetting_Page = () => {
     }));
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
+    setLoading(true);
     if (validate()) {
-      console.log("Updated Profile Data:", formData);
+      try {
+        const data = new FormData();
+        data.append("name", formData.fullName);
+        data.append("email", formData.email);
+        data.append("phone", formData.phone);
+        if (formData.password) data.append("password", formData.password);
+        if (fileInputRef.current.files[0])
+          data.append("profilePic", fileInputRef.current.files[0]);
+
+        const response = await updateProfile(data);
+        if (response.data.success) {
+          toast.success(response.data.message);
+          setLoading(false);
+          navigate('/home')
+        }
+      } catch (error) {
+        console.log(error);
+        toast.error(error?.response?.data?.message);
+      }
     }
   };
 
@@ -167,6 +215,10 @@ const Cus_ProfileSetting_Page = () => {
                     onChange={handleChange}
                     className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                   />
+                  <p className="text-xs text-gray-600">
+                    Leave empty to keep current password
+                  </p>
+
                   {errors.password && (
                     <p className="text-red-500 text-sm">{errors.password}</p>
                   )}
@@ -197,7 +249,11 @@ const Cus_ProfileSetting_Page = () => {
                   type="submit"
                   className="bg-orange-500 text-white py-2 px-6 rounded-lg hover:bg-orange-600 transition"
                 >
-                  Save Changes
+                  {loading ? (
+                    <span className="loading loading-spinner loading-lg"></span>
+                  ) : (
+                    "Save Changes"
+                  )}
                 </button>
               </div>
             </form>

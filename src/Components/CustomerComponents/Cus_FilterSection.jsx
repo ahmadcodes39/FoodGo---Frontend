@@ -1,5 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Search, MapPin, Truck } from "lucide-react";
+import { getCuisine } from "../../api/customerApi";
+import toast from "react-hot-toast";
+import Loading from "../LoadingSpinner/Loading";
 
 const Cus_FilterSection = ({ onApplyFilters }) => {
   const [deliveryOnly, setDeliveryOnly] = useState(false);
@@ -8,15 +11,25 @@ const Cus_FilterSection = ({ onApplyFilters }) => {
   const [deliveryTime, setDeliveryTime] = useState("");
   const [restaurantName, setRestaurantName] = useState("");
   const [address, setAddress] = useState("");
-
-  const cuisines = [
-    "Italian",
-    "Chinese",
-    "BBQ",
-    "Fast Food",
-    "Dessert",
-    "Seafood",
-  ];
+  const [cuisines,setCuisine] = useState([])
+  const [loading,setLoading] = useState(false)
+   useEffect(() => {
+     const getCuisines = async () => {
+       setLoading(true); 
+       try {
+         const response = await getCuisine();
+         const data = response.data;
+         if (data.success) {
+           setCuisine(data.cuisine);
+         }
+       } catch (error) {
+         toast.error(error?.response?.data?.message || "Something went wrong");
+       } finally {
+         setLoading(false); 
+       }
+     };
+     getCuisines();
+   }, []);
 
   // ✅ Added missing toggleCuisine function
   const toggleCuisine = (cuisine) => {
@@ -48,7 +61,9 @@ const Cus_FilterSection = ({ onApplyFilters }) => {
     setAddress("");
     onApplyFilters({}); // clear all filters in parent
   };
-
+  if (loading) {
+    return <Loading/>
+  }
   return (
     <section className="bg-base-200 py-8 px-6 md:px-10 rounded-2xl shadow-sm mt-[70px]">
       {/* Header */}

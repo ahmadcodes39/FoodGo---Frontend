@@ -50,10 +50,11 @@ const Cus_ComplaintCard = ({ complaint }) => {
   const modalId = `view_detail_complaint_model_${complaint._id}`;
 
   const handleDetailBtnClick = () => {
-    setSelectedComplaint(complaint);
+    // console.log("compleint id from parent ",complaint._id)
+    setSelectedComplaint(complaint._id);
     setTimeout(() => {
       document.getElementById(modalId).showModal();
-    }, 50); // small delay ensures state updates first
+    }, 50);
   };
 
   return (
@@ -63,7 +64,7 @@ const Cus_ComplaintCard = ({ complaint }) => {
         <div className="flex items-center gap-3">
           <img
             src={
-              complaint.againstRestaurant?.image ||
+              complaint?.againstRestaurant?.logo ||
               "/restaurant-placeholder.jpg"
             }
             alt="Restaurant"
@@ -71,7 +72,7 @@ const Cus_ComplaintCard = ({ complaint }) => {
           />
           <div>
             <h3 className="font-semibold text-lg text-gray-800">
-              Complaint against {complaint.againstRestaurant?.name}
+              Complaint against {complaint?.againstRestaurant?.name}
             </h3>
           </div>
         </div>
@@ -88,11 +89,11 @@ const Cus_ComplaintCard = ({ complaint }) => {
       <div className="text-sm text-gray-700 space-y-2">
         <p>
           <span className="font-medium text-gray-900">Order ID:</span>{" "}
-          {complaint.orderId}
+          {complaint?.orderId._id}
         </p>
         <p>
           <span className="font-medium text-orange-600">Reason:</span>{" "}
-          {complaint.reason}
+          {complaint?.reason}
         </p>
       </div>
 
@@ -118,7 +119,7 @@ const Cus_ComplaintCard = ({ complaint }) => {
       {/* Footer */}
       <div className="flex justify-between items-center mt-4 text-xs text-gray-500">
         <span>
-          Filed on: {new Date(complaint.createdAt).toLocaleDateString()}
+          Filed on: {new Date(complaint?.createdAt).toLocaleDateString()}
         </span>
         <button
           className="text-orange-600 font-semibold hover:underline"

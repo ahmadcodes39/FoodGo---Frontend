@@ -1,43 +1,44 @@
 import React, { useState } from "react";
+import { addMenu } from "../../../api/restaurantApi";
+import { useParams } from "react-router-dom";
+import toast from "react-hot-toast";
 
 const Res_menuItemModal = () => {
+  const { id } = useParams(); // ✅ fixed useParams
   const [formData, setFormData] = useState({
     name: "",
     price: "",
     category: "",
-    logo: null,
+    image: null,
   });
-
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false); // ✅ loading state
 
-  // ✅ Validation Logic
+  // ✅ Validation
   const validate = () => {
     const newErrors = {};
 
-    // Name validation
     if (!formData.name.trim()) {
       newErrors.name = "Name is required.";
     } else if (!/^[A-Za-z\s]+$/.test(formData.name)) {
       newErrors.name = "Name should contain only letters and spaces.";
     }
 
-    // Price validation
     if (!formData.price) {
       newErrors.price = "Price is required.";
     } else if (Number(formData.price) <= 0) {
       newErrors.price = "Price must be a positive number.";
     }
 
-    // Category validation
     if (!formData.category.trim()) {
       newErrors.category = "Category is required.";
     } else if (!/^[A-Za-z\s]+$/.test(formData.category)) {
       newErrors.category = "Category should contain only letters and spaces.";
     }
 
-    if (!formData.logo) {
-  newErrors.logo = "Logo is required.";
-}
+    if (!formData.image) {
+      newErrors.image = "image is required.";
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -50,29 +51,40 @@ const Res_menuItemModal = () => {
       ...prev,
       [name]: files ? files[0] : value,
     }));
-    setErrors((prev) => ({ ...prev, [name]: "" })); // Clear error as user types
+    setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   // ✅ Handle Submit
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
 
-    console.log("New Menu Item:", formData);
+    setLoading(true);
+    try {
+      const menuData = new FormData();
+      menuData.append("name", formData.name);
+      menuData.append("price", formData.price);
+      menuData.append("category", formData.category);
+      menuData.append("image", formData.image);
 
-    // Close modal after success
-    document.getElementById("menu_modal").close();
-
-    // Reset form
-    setFormData({ name: "", price: "", category: "", logo: null });
+      const response = await addMenu(id, menuData);
+      if (response.data.success) {
+        toast.success("Menu item added successfully");
+        // Reset form
+        setFormData({ name: "", price: "", category: "", image: null });
+        document.getElementById("menu_modal").close();
+      }
+    } catch (error) {
+      toast.error(error?.response?.data?.message || error.message);
+    } finally {
+      setLoading(false); // ✅ always reset loading
+    }
   };
 
   return (
     <dialog id="menu_modal" className="modal">
       <div className="modal-box max-w-lg">
-        <h3 className="font-bold text-lg mb-4 text-gray-800">
-          Add New Menu Item
-        </h3>
+        <h3 className="font-bold text-lg mb-4 text-gray-800">Add New Menu Item</h3>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
           {/* Name */}
@@ -89,9 +101,7 @@ const Res_menuItemModal = () => {
                   : "border-gray-300 focus:ring-orangeBtn"
               }`}
             />
-            {errors.name && (
-              <p className="text-red-500 text-sm mt-1">{errors.name}</p>
-            )}
+            {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
           </div>
 
           {/* Price */}
@@ -108,9 +118,7 @@ const Res_menuItemModal = () => {
                   : "border-gray-300 focus:ring-orangeBtn"
               }`}
             />
-            {errors.price && (
-              <p className="text-red-500 text-sm mt-1">{errors.price}</p>
-            )}
+            {errors.price && <p className="text-red-500 text-sm mt-1">{errors.price}</p>}
           </div>
 
           {/* Category */}
@@ -127,26 +135,22 @@ const Res_menuItemModal = () => {
                   : "border-gray-300 focus:ring-orangeBtn"
               }`}
             />
-            {errors.category && (
-              <p className="text-red-500 text-sm mt-1">{errors.category}</p>
-            )}
+            {errors.category && <p className="text-red-500 text-sm mt-1">{errors.category}</p>}
           </div>
 
-          {/* Logo */}
+          {/* image */}
           <div>
-            <label className="block text-sm font-medium mb-1">Logo</label>
+            <label className="block text-sm font-medium mb-1">image</label>
             <input
               type="file"
-              name="logo"
+              name="image"
               accept="image/*"
               onChange={handleChange}
               className={`w-full border rounded-md px-3 py-2 file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-orangeBtn file:text-white hover:file:bg-orange-500 ${
-                errors.logo ? "border-red-500" : "border-gray-300"
+                errors.image ? "border-red-500" : "border-gray-300"
               }`}
             />
-            {errors.logo && (
-              <p className="text-red-500 text-sm mt-1">{errors.logo}</p>
-            )}
+            {errors.image && <p className="text-red-500 text-sm mt-1">{errors.image}</p>}
           </div>
 
           {/* Buttons */}
@@ -160,8 +164,10 @@ const Res_menuItemModal = () => {
             </button>
             <button
               type="submit"
-              className="px-4 py-2 rounded-md text-white transition bg-orangeBtn hover:bg-orange-500"
+              disabled={loading} // ✅ disable button when loading
+              className="px-4 py-2 rounded-md text-white transition bg-orangeBtn hover:bg-orange-500 flex items-center justify-center gap-2"
             >
+              {loading && <span className="loading loading-spinner loading-sm"></span>}
               Add Item
             </button>
           </div>

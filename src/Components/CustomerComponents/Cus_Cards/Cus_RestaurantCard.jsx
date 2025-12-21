@@ -48,7 +48,7 @@ const Cus_RestaurantCard = ({ restaurant }) => {
         </div>
 
         <Link
-          to={`/${restaurant.id}/${restaurant.name}`}
+          to={`/${restaurant._id}/${restaurant.name}`}
           className="block w-full bg-orange-500 hover:bg-orange-600 text-white text-center py-2 rounded-lg font-medium transition"
         >
           View Menu

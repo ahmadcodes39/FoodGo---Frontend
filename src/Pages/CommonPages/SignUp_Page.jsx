@@ -1,8 +1,10 @@
 import { ChefHat } from "lucide-react";
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-
+import { Link, useNavigate } from "react-router-dom";
+import { registerUser } from "../../api/authApi";
+import toast from "react-hot-toast";
 const Signup_Page = () => {
+  const navigate = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -24,7 +26,7 @@ const Signup_Page = () => {
   const validatePhone = (phone) => /^03\d{9}$/.test(phone);
   const validateName = (name) => /^[A-Za-z\s]{3,}$/.test(name.trim());
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     let valid = true;
     const newErrors = {
@@ -48,7 +50,8 @@ const Signup_Page = () => {
     }
 
     if (!validatePhone(phone)) {
-      newErrors.phone = "Phone number must be a valid number starting with 03.";
+      newErrors.phone =
+        "Phone number must be a valid 11 numbers starting with 03.";
       valid = false;
     }
 
@@ -72,7 +75,25 @@ const Signup_Page = () => {
     if (!valid) return;
 
     const formData = { name, email, phone, password, role };
-    console.log("Form submission:", formData);
+    const loadingToast = toast.loading("Please wait...");
+
+    try {
+      const response = await registerUser(formData);
+      const data = response.data;
+
+      if (data.success) {
+        toast.success("Registered Successfully", { id: loadingToast });
+        // console.log(data)
+        navigate("/login");
+      } else {
+        toast.error(data.message || "Registration failed", {
+          id: loadingToast,
+        });
+      }
+    } catch (err) {
+      toast.error("Something went wrong", { id: loadingToast });
+      console.error(err);
+    }
   };
 
   return (
@@ -206,8 +227,8 @@ const Signup_Page = () => {
                 <input
                   type="radio"
                   name="role"
-                  value="restaurant"
-                  checked={role === "restaurant"}
+                  value="restaurantOwner"
+                  checked={role === "restaurantOwner"}
                   onChange={(e) => setRole(e.target.value)}
                   className="form-radio text-orange-500"
                 />

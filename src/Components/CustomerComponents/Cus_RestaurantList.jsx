@@ -1,8 +1,8 @@
 import React from "react";
 import Cus_RestaurantCard from "./Cus_Cards/Cus_RestaurantCard";
 
-const Cus_RestaurantList = ({ dummyRestaurants }) => {
-  const hasData = dummyRestaurants && dummyRestaurants.length > 0;
+const Cus_RestaurantList = ({ restaurantsData }) => {
+  const hasData = restaurantsData && restaurantsData.length > 0;
 
   return (
     <div className="py-10 px-6">
@@ -10,8 +10,8 @@ const Cus_RestaurantList = ({ dummyRestaurants }) => {
 
       {hasData ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {dummyRestaurants.slice(0, 5).map((restaurant) => (
-            <Cus_RestaurantCard key={restaurant.id} restaurant={restaurant} />
+          {restaurantsData.map((restaurant) => (
+            <Cus_RestaurantCard key={restaurant._id} restaurant={restaurant} />
           ))}
         </div>
       ) : (

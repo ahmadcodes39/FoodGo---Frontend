@@ -1,21 +1,43 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { sampleComplaint } from "../../Components/Dummy Data/DummyData";
 import TopHeading from "../../Components/Common/TopHeading";
 import Cus_ComplaintCard from "../../Components/CustomerComponents/Cus_Cards/Cus_ComplaintCard";
 import Header from "../../Components/Landing Page Components/Header";
 import FilterButton from "../../Components/Common/FilterButton";
+import { getMyComplaints } from "../../api/customerApi";
+import toast from "react-hot-toast";
+import Loading from "../../Components/LoadingSpinner/Loading";
 
 const Cus_Complaint_Page = () => {
-  const complaintStatus = ["All", "Reviewing","Pending", "Resolved"];
+  const complaintStatus = ["All", "Reviewing", "Pending", "Resolved"];
   const [activeStatus, setActiveStatus] = useState("All");
 
+  const [complaints, setComplaints] = useState([]);
+  useEffect(() => {
+    const getComplaints = async () => {
+      try {
+        const response = await getMyComplaints();
+        const data = response.data;
+        if (data.success) {
+          setComplaints(data.complaints);
+          // console.log("complaint data ",data);
+        } else {
+          toast.error(data.message);
+        }
+      } catch (error) {
+        toast.error(error?.response?.data?.message);
+      }
+    };
+    getComplaints();
+  }, []);
   const filteredComplaints = useMemo(() => {
-    if (activeStatus === "All") return sampleComplaint;
-    return sampleComplaint.filter(
-      (complaint) => complaint.status === activeStatus
-    );
-  }, [activeStatus]);
+    if (activeStatus === "All") return complaints;
+    return complaints.filter((complaint) => complaint.status === activeStatus);
+  }, [activeStatus, complaints]);
 
+  if (!complaints) {
+    return <Loading/>
+  }
   return (
     <>
       <Header />

@@ -10,7 +10,7 @@ const Cus_RestaurantMenuSection = ({ menuItems }) => {
           No menu items found.
         </p>
       </div>
-    );
+    ); 
   }
 
   const groupedMenu = groupByCategory(menuItems);

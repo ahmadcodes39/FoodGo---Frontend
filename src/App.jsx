@@ -1,227 +1,376 @@
 import React from "react";
-import Res_Dashboard_Page from "./Pages/RestaurantPages/Res_Dashboard_Page";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import Res_Orders_Page from "./Pages/RestaurantPages/Res_Orders_Page";
-import RestaurantLayout from "./Components/AppLayouts/RestaurantLayout";
-import Res_Menu_Page from "./Pages/RestaurantPages/Res_Menu_Page";
-import Signup_Page from "./Pages/CommonPages/SignUp_Page";
-import Login_Page from "./Pages/CommonPages/Login_Page";
-// import Admin_Login_Page from "./Pages/AdminPages/Admin_Login_Page";
-import Res_Registration_Page from "./Pages/RestaurantPages/Res_Registration_Page";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import ProtectedRoute from "./ProtectedRoute/ProtectedRoute.jsx";
+import { AuthContext } from "./App Global States/userAuthContext.jsx";
+import PublicRoute from "./ProtectedRoute/publicRoute.jsx";
+// Customer Pages
 import Cus_Home_Page from "./Pages/CustomerPages/Cus_Home_Page";
 import Cus_Menu_Page from "./Pages/CustomerPages/Cus_Menu_Page";
 import Cus_Cart_Page from "./Pages/CustomerPages/Cus_Cart_Page";
-import AdminLayout from "./Components/AppLayouts/AdminLayout";
-import Ad_Manage_Restaurant_Page from "./Pages/AdminPages/Ad_Manage_Restaurant_Page";
-import Ad_Dashboard_Page from "./Pages/AdminPages/Ad_Dashboard_Page";
-import Ad_Complaint_Pages from "./Pages/AdminPages/Ad_Complaint_Pages";
-import Ad_Manage_Customer_Page from "./Pages/AdminPages/Ad_Manage_Customer_Page";
-import Ad_Manage_Orders_Page from "./Pages/AdminPages/Ad_Manage_Orders_Page";
+import Cus_ProfileSetting_Page from "./Pages/CustomerPages/Cus_ProfileSetting_Page";
+import Cus_Orders_Page from "./Pages/CustomerPages/Cus_Orders_Page";
+import Cus_Complaint_Page from "./Pages/CustomerPages/Cus_Complaint_Page";
 import Landing_Page from "./Pages/CommonPages/Landing_Page";
+import Login_Page from "./Pages/CommonPages/Login_Page";
+import Signup_Page from "./Pages/CommonPages/SignUp_Page";
+import CommonLoginPage from "./Pages/CommonPages/CommonLoginPage";
+
+// Restaurant Pages
+import RestaurantLayout from "./Components/AppLayouts/RestaurantLayout";
+import Res_Dashboard_Page from "./Pages/RestaurantPages/Res_Dashboard_Page";
+import Res_Orders_Page from "./Pages/RestaurantPages/Res_Orders_Page";
+import Res_Menu_Page from "./Pages/RestaurantPages/Res_Menu_Page";
 import Res_Analytics_Page from "./Pages/RestaurantPages/Res_Analytics_Page";
 import Res_RestaurantProfile_Page from "./Pages/RestaurantPages/Res_RestaurantProfile_Page";
 import Res_AccountSection_Page from "./Pages/RestaurantPages/Res_AccountSection_Page";
+import Res_Complaint_Page from "./Pages/RestaurantPages/Res_Complaint_Page";
+import Res_Registration_Page from "./Pages/RestaurantPages/Res_Registration_Page";
+
+// Admin Pages
+import AdminLayout from "./Components/AppLayouts/AdminLayout";
+import Ad_Dashboard_Page from "./Pages/AdminPages/Ad_Dashboard_Page";
+import Ad_Manage_Restaurant_Page from "./Pages/AdminPages/Ad_Manage_Restaurant_Page";
+import Ad_Complaint_Pages from "./Pages/AdminPages/Ad_Complaint_Pages";
+import Ad_Manage_Customer_Page from "./Pages/AdminPages/Ad_Manage_Customer_Page";
+import Ad_Manage_Orders_Page from "./Pages/AdminPages/Ad_Manage_Orders_Page";
 import Ad_SpecificRestaurantInfo from "./Pages/AdminPages/Ad_SpecificRestaurantInfo";
 import Ad_Analytics_Page from "./Pages/AdminPages/Ad_Analytics_Page";
-// import CMP_Login_Page from "./Pages/AdminPages/Sub Admins/ComplaintManagerPages/CMP_Login_Page";
-import Res_Complaint_Page from "./Pages/RestaurantPages/Res_Complaint_Page";
+
+// Complaint Manager Pages
 import ComplaintManagerLayout from "./Components/AppLayouts/ComplaintManagerLayout";
 import CMP_Dashboard_Page from "./Pages/AdminPages/Sub Admins/ComplaintManagerPages/CMP_Dashboard_Page";
 import CMP_View_Restaurant_Page from "./Pages/AdminPages/Sub Admins/ComplaintManagerPages/CMP_View_Restaurant_Page";
 import CMP_View_Customer_Page from "./Pages/AdminPages/Sub Admins/ComplaintManagerPages/CMP_View_Customer_Page";
 import CMP_Complaints_Page from "./Pages/AdminPages/Sub Admins/ComplaintManagerPages/CMP_Complaints_Page";
-import Cus_Restaurant_Page from "./Pages/CustomerPages/Cus_Restaurant_Page";
-import Cus_ProfileSetting_Page from "./Pages/CustomerPages/Cus_ProfileSetting_Page";
-import Cus_Orders_Page from "./Pages/CustomerPages/Cus_Orders_Page";
-import Cus_Complaint_Page from "./Pages/CustomerPages/Cus_Complaint_Page";
-// import VerificationManagerLayout from "./Components/AppLayouts/VerificationManagerLayout";
+
+// Verification Manager Pages
 import VRF_Dashboard_Page from "./Pages/AdminPages/Sub Admins/VerificationManagerPages/VRF_Dashboard_Page";
-import CommonLoginPage from "./Pages/CommonPages/CommonLoginPage";
+import Cus_Restaurant_Page from "./Pages/CustomerPages/Cus_Restaurant_Page.jsx";
+import RestaurantRequestPending from "./Components/RestaurantComponents/RestaurantRequestPending.jsx";
+import RestaurantStatusGuard from "./Components/RestaurantComponents/RestaurantStatusGuard.jsx";
+import PaymentSuccess from "./Components/CustomerComponents/PaymentSuccess.jsx";
+import PaymentCancel from "./Components/CustomerComponents/PaymentCancel.jsx.jsx";
+
 const App = () => {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Login routes */}
-        <Route path="/login" element={<Login_Page />} />
-        <Route path="/admin/login" element={<CommonLoginPage role={"admin"} />} />
-        <Route path="/complaint-manager/login" element={<CommonLoginPage role={"complaint-manager"} />} />
-        <Route path="/verification-manager/login" element={<CommonLoginPage role={"verification-manager"} />} />
-        {/* Sign Up Routes */}
-        <Route path="/create-account" element={<Signup_Page />} />
+        {/* Public routes */}
+        <Route
+          path="/"
+          element={
+            <PublicRoute>
+              <Landing_Page />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/login"
+          element={
+            <PublicRoute>
+              <Login_Page />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/create-account"
+          element={
+            <PublicRoute>
+              <Signup_Page />
+            </PublicRoute>
+          }
+        />
 
-        {/* Landing page */}
-        <Route path="/" element={<Landing_Page />} />
         {/* Customer Routes */}
-        <Route path="/home" element={<Cus_Home_Page />} />
-        <Route path="/:id/:name" element={<Cus_Menu_Page />} />
-        {/* take user id in route */}
-        <Route path="/cart" element={<Cus_Cart_Page />} />
-        <Route path="/restaurants" element={<Cus_Restaurant_Page />} />
-        <Route path="/profile-setting" element={<Cus_ProfileSetting_Page />} />
-        <Route path="/my-orders" element={<Cus_Orders_Page />} />
-        <Route path="/my-complaints" element={<Cus_Complaint_Page />} />
+        <Route
+          path="/home"
+          element={
+            <ProtectedRoute role="customer">
+              <Cus_Home_Page />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/:id/:name"
+          element={
+            <ProtectedRoute role="customer">
+              <Cus_Menu_Page />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/cart"
+          element={
+            <ProtectedRoute role="customer">
+              <Cus_Cart_Page />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile-setting"
+          element={
+            <ProtectedRoute role="customer">
+              <Cus_ProfileSetting_Page />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-orders"
+          element={
+            <ProtectedRoute role="customer">
+              <Cus_Orders_Page />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-complaints"
+          element={
+            <ProtectedRoute role="customer">
+              <Cus_Complaint_Page />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/restaurants"
+          element={
+            <ProtectedRoute role="customer">
+              <Cus_Restaurant_Page />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/payment-success"
+          element={
+            <ProtectedRoute role="customer">
+              <PaymentSuccess />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/payment-cancel"
+          element={
+            <ProtectedRoute role="customer">
+              <PaymentCancel />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Restaurant Routes */}
         <Route
           path="/restaurant/register"
-          element={<Res_Registration_Page />}
-        />
-        <Route
-          path="/restaurant/orders-page"
           element={
-            <RestaurantLayout showSidebar={true}>
-              <Res_Orders_Page />
-            </RestaurantLayout>
+            <ProtectedRoute role="restaurantOwner">
+              <Res_Registration_Page />
+            </ProtectedRoute>
           }
         />
         <Route
-          path="/restaurant/dashboard"
+          path="/restaurant/register-status"
           element={
-            <RestaurantLayout showSidebar={true}>
-              <Res_Dashboard_Page />
-            </RestaurantLayout>
+            <ProtectedRoute role="restaurantOwner">
+              <RestaurantStatusGuard>
+                <RestaurantRequestPending />
+              </RestaurantStatusGuard>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/:id/restaurant/dashboard"
+          element={
+            <ProtectedRoute role="restaurantOwner">
+              <RestaurantLayout showSidebar={true}>
+                <Res_Dashboard_Page />
+              </RestaurantLayout>
+            </ProtectedRoute>
           }
         />
         <Route
-          path="/restaurant/menu-page"
+          path="/:id/restaurant/orders-page"
           element={
-            <RestaurantLayout showSidebar={true}>
-              <Res_Menu_Page />
-            </RestaurantLayout>
+            <ProtectedRoute role="restaurantOwner">
+              <RestaurantLayout showSidebar={true}>
+                <Res_Orders_Page />
+              </RestaurantLayout>
+            </ProtectedRoute>
           }
         />
         <Route
-          path="/restaurant/analytics-page"
+          path="/:id/restaurant/menu-page"
           element={
-            <RestaurantLayout showSidebar={true}>
-              <Res_Analytics_Page />
-            </RestaurantLayout>
+            <ProtectedRoute role="restaurantOwner">
+              <RestaurantLayout showSidebar={true}>
+                <Res_Menu_Page />
+              </RestaurantLayout>
+            </ProtectedRoute>
           }
         />
         <Route
-          path="/restaurant/restaurant-profile"
+          path="/:id/restaurant/analytics-page"
           element={
-            <RestaurantLayout showSidebar={true}>
-              <Res_RestaurantProfile_Page />
-            </RestaurantLayout>
+            <ProtectedRoute role="restaurantOwner">
+              <RestaurantLayout showSidebar={true}>
+                <Res_Analytics_Page />
+              </RestaurantLayout>
+            </ProtectedRoute>
           }
         />
         <Route
-          path="/restaurant/account-settings"
+          path="/:id/restaurant/restaurant-profile"
           element={
-            <RestaurantLayout showSidebar={true}>
-              <Res_AccountSection_Page />
-            </RestaurantLayout>
+            <ProtectedRoute role="restaurantOwner">
+              <RestaurantLayout showSidebar={true}>
+                <Res_RestaurantProfile_Page />
+              </RestaurantLayout>
+            </ProtectedRoute>
           }
         />
         <Route
-          path="/restaurant/complaints"
+          path="/:id/restaurant/account-settings"
           element={
-            <RestaurantLayout showSidebar={true}>
-              <Res_Complaint_Page />
-            </RestaurantLayout>
+            <ProtectedRoute role="restaurantOwner">
+              <RestaurantLayout showSidebar={true}>
+                <Res_AccountSection_Page />
+              </RestaurantLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/:id/restaurant/complaints"
+          element={
+            <ProtectedRoute role="restaurantOwner">
+              <RestaurantLayout showSidebar={true}>
+                <Res_Complaint_Page />
+              </RestaurantLayout>
+            </ProtectedRoute>
           }
         />
 
         {/* Admin Routes */}
-        <Route
-          path="/admin/restaurants"
-          element={
-            <AdminLayout showSidebar={true}>
-              <Ad_Manage_Restaurant_Page />
-            </AdminLayout>
-          }
-        />
+        <Route path="/admin/login" element={<CommonLoginPage role="admin" />} />
         <Route
           path="/admin/dashboard"
           element={
-            <AdminLayout showSidebar={true}>
-              <Ad_Dashboard_Page />
-            </AdminLayout>
+            <ProtectedRoute role="admin">
+              <AdminLayout showSidebar={true}>
+                <Ad_Dashboard_Page />
+              </AdminLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/restaurants"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminLayout showSidebar={true}>
+                <Ad_Manage_Restaurant_Page />
+              </AdminLayout>
+            </ProtectedRoute>
           }
         />
         <Route
           path="/admin/complaints"
           element={
-            <AdminLayout showSidebar={true}>
-              <Ad_Complaint_Pages />
-            </AdminLayout>
+            <ProtectedRoute role="admin">
+              <AdminLayout showSidebar={true}>
+                <Ad_Complaint_Pages />
+              </AdminLayout>
+            </ProtectedRoute>
           }
         />
         <Route
           path="/admin/customers"
           element={
-            <AdminLayout showSidebar={true}>
-              <Ad_Manage_Customer_Page />
-            </AdminLayout>
+            <ProtectedRoute role="admin">
+              <AdminLayout showSidebar={true}>
+                <Ad_Manage_Customer_Page />
+              </AdminLayout>
+            </ProtectedRoute>
           }
         />
         <Route
           path="/admin/orders"
           element={
-            <AdminLayout showSidebar={true}>
-              <Ad_Manage_Orders_Page />
-            </AdminLayout>
+            <ProtectedRoute role="admin">
+              <AdminLayout showSidebar={true}>
+                <Ad_Manage_Orders_Page />
+              </AdminLayout>
+            </ProtectedRoute>
           }
         />
         <Route
           path="/admin/:id/restaurant-info"
           element={
-            <AdminLayout showSidebar={true}>
-              <Ad_SpecificRestaurantInfo />
-            </AdminLayout>
+            <ProtectedRoute role="admin">
+              <AdminLayout showSidebar={true}>
+                <Ad_SpecificRestaurantInfo />
+              </AdminLayout>
+            </ProtectedRoute>
           }
         />
         <Route
           path="/admin/analytics"
           element={
-            <AdminLayout showSidebar={true}>
-              <Ad_Analytics_Page />
-            </AdminLayout>
+            <ProtectedRoute role="admin">
+              <AdminLayout showSidebar={true}>
+                <Ad_Analytics_Page />
+              </AdminLayout>
+            </ProtectedRoute>
           }
         />
 
-        {/* Complaint Manager Routes */}
-        
+        {/* Complaint Manager */}
         <Route
           path="/cm/restaurants"
           element={
-            <ComplaintManagerLayout showSidebar={true}>
-              <CMP_View_Restaurant_Page />
-            </ComplaintManagerLayout>
+            <ProtectedRoute role="complaint-manager">
+              <ComplaintManagerLayout showSidebar={true}>
+                <CMP_View_Restaurant_Page />
+              </ComplaintManagerLayout>
+            </ProtectedRoute>
           }
         />
         <Route
           path="/cm/customers"
           element={
-            <ComplaintManagerLayout showSidebar={true}>
-              <CMP_View_Customer_Page />
-            </ComplaintManagerLayout>
+            <ProtectedRoute role="complaint-manager">
+              <ComplaintManagerLayout showSidebar={true}>
+                <CMP_View_Customer_Page />
+              </ComplaintManagerLayout>
+            </ProtectedRoute>
           }
         />
         <Route
           path="/cm/complaints"
           element={
-            <ComplaintManagerLayout showSidebar={true}>
-              <CMP_Complaints_Page />
-            </ComplaintManagerLayout>
-          }
-        />
-        <Route
-          path="/cm/:id/restaurant-info"
-          element={
-            <ComplaintManagerLayout showSidebar={true}>
-              <Ad_SpecificRestaurantInfo isAuthorize={false} />
-            </ComplaintManagerLayout>
+            <ProtectedRoute role="complaint-manager">
+              <ComplaintManagerLayout showSidebar={true}>
+                <CMP_Complaints_Page />
+              </ComplaintManagerLayout>
+            </ProtectedRoute>
           }
         />
 
-        {/* Verification Manager Routes */}
-        <Route path="/vrf/dashboard" element={<VRF_Dashboard_Page />} />
+        {/* Verification Manager */}
+        <Route
+          path="/vrf/dashboard"
+          element={
+            <ProtectedRoute role="verification-manager">
+              <VRF_Dashboard_Page />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/vrf/:id/restaurant-info"
-          element={<Ad_SpecificRestaurantInfo isAuthorize={true} />}
+          element={
+            <ProtectedRoute role="verification-manager">
+              <Ad_SpecificRestaurantInfo isAuthorize={true} />
+            </ProtectedRoute>
+          }
         />
+
+        {/* Catch all route */}
+        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
   );

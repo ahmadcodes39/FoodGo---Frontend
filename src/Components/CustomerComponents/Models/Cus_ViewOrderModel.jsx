@@ -1,21 +1,70 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Clock, MapPin, CheckCircle2 } from "lucide-react";
 import Cus_ComplaintModel from "./Cus_ComplaintModel";
+import { checkIsComplaint } from "../../../api/customerApi";
+import toast from "react-hot-toast";
 
 const Cus_ViewOrderModel = ({ order }) => {
+  const [dataForComplaint, setDataForComplaint] = useState({
+    reason: "",
+    orderId: "",
+    againstUser: "",
+    againstRestaurant: "",
+  });
+
+  useEffect(()=>{
+console.log("data ",order)
+  },[order])
+
+
+  const [active, setActive] = useState(false);
+
   useEffect(() => {
-    console.log("order data ", order);
+    if (!order?._id) return;
+
+    const checkIfAlreadyAComplaint = async () => {
+      try {
+        // console.log("chcking order data ",order)
+        const response = await checkIsComplaint(order._id);
+        const data = response.data;
+
+        if (data.isAlreadyComplaint === true) {
+          setActive(true);
+        } else {
+          setActive(false);
+        }
+      } catch (error) {
+        toast.error(error?.response?.data?.message);
+      }
+    };
+
+    checkIfAlreadyAComplaint();
   }, [order]);
+
   if (!order) return null;
 
-  const steps = [
-    { label: "Order Placed", time: "1:45 PM" },
-    { label: "Restaurant Preparing", time: "1:50 PM" },
-    { label: "Out for Delivery", time: "2:10 PM" },
-    { label: "Delivered", time: "2:30 PM (Est.)" },
-  ];
+  const steps =
+    order.statusHistory?.map((entry) => ({
+      label: entry.status,
+      time: new Date(entry.time).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+    })) || [];
 
-  const currentStep = order.currentStep !== undefined ? order.currentStep : 2;
+ const getDataReadyForComplaint = () => {
+  document.getElementById("cus_complaint_modal").showModal();
+
+  setDataForComplaint(prev => ({
+    ...prev,
+    orderId: order._id,
+    againstRestaurant: order?.orderItems[0]?.restaurantId?._id || "",
+    againstUser: "",
+  }));
+};
+
+
+  const currentStep = steps.length - 1;
 
   return (
     <>
@@ -34,13 +83,15 @@ const Cus_ViewOrderModel = ({ order }) => {
           </h2>
           <div className="flex items-center gap-4 mb-5">
             <img
-              src={order.image}
-              alt={order.restaurant}
-              className="w-16 h-16 rounded-xl object-cover"
+              src={order.orderItems[0]?.restaurantId?.logo}
+              alt={order.orderItems[0]?.restaurantId?.name}
+              className="w-16 h-16 rounded-xl object-cover border"
             />
             <div>
-              <h3 className="font-semibold text-lg">{order.restaurant}</h3>
-              <p className="text-sm text-gray-500">Order #{order.id}</p>
+              <h3 className="font-semibold text-lg">
+                {order.orderItems[0]?.restaurantId?.name}
+              </h3>
+              <p className="text-sm text-gray-500">Order #{order._id}</p>
             </div>
           </div>
 
@@ -50,7 +101,6 @@ const Cus_ViewOrderModel = ({ order }) => {
               <Clock size={18} className="text-orange-500" />
               Delivery Progress
             </h3>
-
             <ul className="relative border-l-2 border-green-500 ml-4">
               {steps.map((step, index) => (
                 <li key={index} className="mb-6 ml-4">
@@ -84,18 +134,14 @@ const Cus_ViewOrderModel = ({ order }) => {
           <div className="border-t border-gray-200 pt-5 mt-5">
             <h3 className="font-semibold mb-3 text-gray-800">Order Items</h3>
             <div className="text-sm space-y-2">
-              <div className="flex justify-between">
-                <span>2x Classic Cheeseburger</span>
-                <span>$12.99</span>
-              </div>
-              <div className="flex justify-between">
-                <span>1x French Fries</span>
-                <span>$4.99</span>
-              </div>
-              <div className="flex justify-between">
-                <span>1x Milkshake</span>
-                <span>$5.99</span>
-              </div>
+              {order.orderItems?.map((item, index) => (
+                <div key={index} className="flex justify-between">
+                  <span>
+                    {item.quantity}x {item.item?.name}
+                  </span>
+                  <span>PKR {item.price}</span>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -105,39 +151,40 @@ const Cus_ViewOrderModel = ({ order }) => {
               <MapPin size={18} className="text-orange-500" />
               Delivery Address
             </h3>
-            <p className="text-sm text-gray-600">
-              123 Main Street, Apt 4B, New York, NY 10001
-            </p>
+            <p className="text-sm text-gray-600">{order.deliveryAddress}</p>
           </div>
 
           {/* Summary */}
           <div className="border-t border-gray-200 pt-5 mt-5 text-sm">
             <div className="flex justify-between font-bold text-lg text-orange-600 mt-2">
               <span>Total</span>
-              <span>{order.total}</span>
+              <span>PKR {order.totalPrice}</span>
             </div>
           </div>
 
           {/* Actions */}
           <div className="modal-action mt-6 flex flex-col items-center sm:flex-row sm:justify-end ">
-            {/* Reorder Button */}
-            <button className="btn w-full sm:w-auto bg-orange-500 hover:bg-orange-600 text-white">
-              Reorder
-            </button>
-
-            {/* Complaint Button */}
+          
             <button
-              onClick={() =>
-                document.getElementById("cus_complaint_modal").showModal()
-              }
-              className="btn w-full sm:w-auto bg-red-500 text-white border border-red-200 hover:bg-red-600"
+              onClick={getDataReadyForComplaint}
+              disabled={active}
+              className={`btn w-full sm:w-auto text-white border ${
+                active
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-red-500 hover:bg-red-600"
+              }`}
             >
-              Make a Complaint
+              {active ? "Complaint Submitted" : "Make a Complaint"}
             </button>
           </div>
         </div>
       </dialog>
-      <Cus_ComplaintModel />
+
+      <Cus_ComplaintModel
+        dataForComplaint={dataForComplaint}
+        setDataForComplaint={setDataForComplaint}
+        setActive={setActive}
+      />
     </>
   );
 };

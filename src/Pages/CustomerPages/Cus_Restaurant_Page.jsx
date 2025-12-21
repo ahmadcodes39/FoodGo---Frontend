@@ -1,66 +1,116 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Header from "../../Components/Landing Page Components/Header";
 import Cus_FilterSection from "../../Components/CustomerComponents/Cus_FilterSection";
-import { dummyRestaurants } from "../../Components/Dummy Data/DummyData";
 import Cus_RestaurantCard from "../../Components/CustomerComponents/Cus_Cards/Cus_RestaurantCard";
 import TopHeading from "../../Components/Common/TopHeading";
+import { getRestaurants } from "../../api/customerApi";
+import Loading from "../../Components/LoadingSpinner/Loading";
+import toast from "react-hot-toast";
 
 const Cus_Restaurant_Page = () => {
   const [filters, setFilters] = useState({});
-  const [visibleCount, setVisibleCount] = useState(10);
+  const [restaurants, setRestaurants] = useState([]);
 
-  const handleLoadMore = () => setVisibleCount((prev) => prev + 10);
-  const handleApplyFilters = (newFilters) => setFilters(newFilters);
+  const [page, setPage] = useState(1);
+  const [limit] = useState(6);
+  const [hasMore, setHasMore] = useState(true);
 
-  // 🔍 Apply filters with useMemo for performance
+  const [loading, setLoading] = useState(false);
+
+  // =====================================
+  // LOAD RESTAURANTS WITH PAGINATION
+  // =====================================
+  const loadRestaurants = async () => {
+    if (!hasMore) return;
+
+    setLoading(true);
+    try {
+      const response = await getRestaurants(page, limit);
+      const data = response.data;
+
+      if (data.success) {
+        setRestaurants((prev) => {
+          const combined = [...prev, ...data.restaurants];
+          const unique = Array.from(
+            new Map(combined.map((r) => [r._id, r])).values()
+          );
+          return unique;
+        });
+
+        setHasMore(page < data.totalPages);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadRestaurants();
+  }, [page]);
+
+  // =====================================
+  // FILTER LOGIC
+  // =====================================
   const filteredRestaurants = useMemo(() => {
-    return dummyRestaurants.filter((restaurant) => {
-      // 1️⃣ Restaurant Name
+    return restaurants.filter((restaurant) => {
       if (
         filters.restaurantName &&
-        !restaurant.name.toLowerCase().includes(filters.restaurantName.toLowerCase())
+        !restaurant.name
+          .toLowerCase()
+          .includes(filters.restaurantName.toLowerCase())
       )
         return false;
 
-      // 2️⃣ Address
       if (
         filters.address &&
-        !restaurant.address.toLowerCase().includes(filters.address.toLowerCase())
+        !restaurant.address
+          .toLowerCase()
+          .includes(filters.address.toLowerCase())
       )
         return false;
 
-      // 3️⃣ Cuisine
       if (
         filters.cuisines &&
         filters.cuisines.length > 0 &&
         !filters.cuisines.some((c) =>
-          restaurant.cuisine.map((r) => r.toLowerCase()).includes(c.toLowerCase())
+          restaurant.cuisine
+            ?.map((r) => r.toLowerCase())
+            .includes(c.toLowerCase())
         )
       )
         return false;
 
-      // 4️⃣ Delivery Only
       if (filters.deliveryOnly && !restaurant.deliveryAvailable) return false;
 
-      // 5️⃣ Delivery Time (e.g., "0-20", "20-35")
       if (filters.deliveryTime) {
         const [min, max] = filters.deliveryTime.split("-").map(Number);
-        const restaurantTime = restaurant.deliveryTime.match(/\d+/g);
-        if (restaurantTime) {
-          const avgTime =
-            (parseInt(restaurantTime[0]) + parseInt(restaurantTime[1])) / 2;
-          if (avgTime < min || avgTime > max) return false;
+        const times = restaurant.deliveryTime.match(/\d+/g);
+        if (times) {
+          const avg = (Number(times[0]) + Number(times[1])) / 2;
+          if (avg < min || avg > max) return false;
         }
       }
 
-      // 6️⃣ Price Range
-      if (filters.maxPrice && restaurant.maxPrice > filters.maxPrice) return false;
+      if (filters.maxPrice && restaurant.maxPrice > filters.maxPrice)
+        return false;
 
       return true;
     });
-  }, [filters]);
+  }, [filters, restaurants]);
 
-  const visibleRestaurants = filteredRestaurants.slice(0, visibleCount);
+  const handleApplyFilters = (newFilters) => setFilters(newFilters);
+
+  const handleLoadMore = () => {
+    if (hasMore) setPage((prev) => prev + 1);
+  };
+
+  if (loading && page === 1) {
+    return <Loading />;
+  }
 
   return (
     <div>
@@ -70,10 +120,13 @@ const Cus_Restaurant_Page = () => {
       <div className="py-10 px-6">
         <TopHeading title={"Explore Popular Restaurants"} />
 
-        {visibleRestaurants.length > 0 ? (
+        {filteredRestaurants.length > 0 ? (
           <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {visibleRestaurants.map((restaurant) => (
-              <Cus_RestaurantCard key={restaurant.id} restaurant={restaurant} />
+            {filteredRestaurants.map((restaurant) => (
+              <Cus_RestaurantCard
+                key={restaurant._id}
+                restaurant={restaurant}
+              />
             ))}
           </div>
         ) : (
@@ -82,13 +135,15 @@ const Cus_Restaurant_Page = () => {
           </p>
         )}
 
-        {visibleCount < filteredRestaurants.length && (
+        {/* Load More Button */}
+        {hasMore && filteredRestaurants.length > 0 && (
           <div className="flex justify-center mt-10">
             <button
               onClick={handleLoadMore}
+              disabled={loading}
               className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-lg shadow transition-all"
             >
-              Load More
+              {loading ? "Loading..." : "Load More"}
             </button>
           </div>
         )}

@@ -1,8 +1,14 @@
 import { ChefHat } from "lucide-react";
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { loginUser } from "../../api/authApi";
+import toast from "react-hot-toast";
+import { useContext } from "react";
+import { AuthContext } from "../../App Global States/userAuthContext";
 
 const Login_Page = () => {
+  const navigate = useNavigate();
+  const { setUser, setToken } = useContext(AuthContext);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -16,14 +22,14 @@ const Login_Page = () => {
 
   const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const validatePassword = (password) => password.length >= 6;
-    const validateName = (name) => /^[A-Za-z\s]{3,}$/.test(name.trim());
+  const validateName = (name) => /^[A-Za-z\s]{3,}$/.test(name.trim());
 
-  const handleFormSubmission = (e) => {
+  const handleFormSubmission = async (e) => {
     e.preventDefault();
     let valid = true;
     const newErrors = { name: "", email: "", password: "", role: "" };
 
-      if (!validateName(name)) {
+    if (!validateName(name)) {
       newErrors.name =
         "Name must be at least 3 characters and contain only letters and spaces.";
       valid = false;
@@ -47,8 +53,39 @@ const Login_Page = () => {
     setErrors(newErrors);
     if (!valid) return;
 
-    const formData = { name, role, email, password };
-    console.log(`Form submission for ${role}:`, formData);
+    // const formData = { name, role, email, password };
+    const loadingToast = toast.loading("Processing...");
+    try {
+      const formData = { email, password, role };
+      // console.log("login data ", formData)
+      const response = await loginUser(formData);
+      const data = response.data;
+
+      if (data.success) {
+        toast.success("Authenticated Successfully", { id: loadingToast });
+
+        const token = data.token;
+        const loggedInUser = data.user;
+
+        localStorage.setItem("token", token);
+
+        setToken(token);
+        setUser(loggedInUser);
+
+        if (loggedInUser.isOnBoarded) {
+          navigate("/home");
+        } else {
+          navigate("/restaurant/register");
+        }
+      } else {
+        toast.error(data.message || "Authentication failed", {
+          id: loadingToast,
+        });
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || "Something went wrong";
+      toast.error(message, { id: loadingToast });
+    }
   };
 
   return (
@@ -96,7 +133,7 @@ const Login_Page = () => {
               }`}
             >
               <option value="customer">Customer</option>
-              <option value="restaurant owner">Restaurant Owner</option>
+              <option value="restaurantOwner">Restaurant Owner</option>
             </select>
             {errors.role && (
               <p className="text-red-500 text-sm mt-1">{errors.role}</p>

@@ -55,15 +55,14 @@ const Cus_RestaurantHeader = ({ restaurant }) => {
             {restaurant.deliveryTime}
           </p>
           <p className="flex items-center gap-2">
-  <Package size={18} className="text-orange-500" />
-  <span className="font-semibold">Delivery Available:</span>
-  {restaurant.deliveryAvailable ? (
-    <span className="text-green-600">Yes</span>
-  ) : (
-    <span className="text-red-600">No</span>
-  )}
-</p>
-
+            <Package size={18} className="text-orange-500" />
+            <span className="font-semibold">Delivery Available:</span>
+            {restaurant.deliveryAvailable ? (
+              <span className="text-green-600">Yes</span>
+            ) : (
+              <span className="text-red-600">No</span>
+            )}
+          </p>
         </div>
       </div>
     </div>

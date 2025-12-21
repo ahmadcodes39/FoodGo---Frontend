@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   UtensilsCrossed,
@@ -10,26 +10,38 @@ import {
   LogOut,
   Home,
 } from "lucide-react";
-import { useCart } from "../App Global States/CartContext";
+import { useCart } from "../../App Global States/CartContext";
+import { AuthContext } from "../../App Global States/userAuthContext";
 
 const Header = () => {
-  const navigate = useNavigate();
+  const navigate = useNavigate(); 
+   const { user, setUser, setToken } = useContext(AuthContext);
+
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(true); // demo only
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const { totalQuantity } = useCart();
 
+  useEffect(() => {
+    if (user?._id) {
+      setIsLoggedIn(true);
+    } else {
+      setIsLoggedIn(false);
+    }
+  }, [user]);
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const handleLogout = () => setIsLoggedIn(false);
 
-  useEffect(() => {
-    if (!isLoggedIn) navigate("/");
-  }, [isLoggedIn]);
+const handleLogout = () => {
+  localStorage.removeItem("token");
+  setToken(null);     
+  setUser(null);      
+  navigate("/login");
+};
 
   return (
     <header
@@ -101,8 +113,24 @@ const Header = () => {
                 </div>
               </Link>
               <div className="dropdown dropdown-end">
-                <div tabIndex={0} role="button" className="btn btn-ghost btn-circle">
-                  <User size={22} className="text-gray-700" />
+                <div
+                  tabIndex={0}
+                  role="button"
+                  className="btn btn-ghost btn-circle"
+                >
+                  {user?.profilePic ? (
+                    <img
+                      src={user.profilePic}
+                      alt="User"
+                      className="w-8 h-8 rounded-full object-cover border"
+                      onError={(e) =>
+                        (e.target.src =
+                          "https://cdn-icons-png.flaticon.com/512/149/149071.png")
+                      }
+                    />
+                  ) : (
+                    <User size={22} className="text-gray-700" />
+                  )}
                 </div>
                 <ul className="menu menu-sm dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-56">
                   <li>
@@ -111,12 +139,18 @@ const Header = () => {
                     </Link>
                   </li>
                   <li>
-                    <Link to="/my-complaints" className="flex items-center gap-2">
+                    <Link
+                      to="/my-complaints"
+                      className="flex items-center gap-2"
+                    >
                       <AlertTriangle size={16} /> Complaints
                     </Link>
                   </li>
                   <li>
-                    <Link to="/profile-setting" className="flex items-center gap-2">
+                    <Link
+                      to="/profile-setting"
+                      className="flex items-center gap-2"
+                    >
                       <Settings size={16} /> Profile Settings
                     </Link>
                   </li>
@@ -157,36 +191,51 @@ const Header = () => {
           <ul className="flex flex-col py-3 px-5 space-y-3 text-gray-800 font-medium">
             {/* Main Links */}
             <li className="flex items-center gap-2">
-              <Home size={18} /> 
-              <Link to="/home" onClick={() => setMenuOpen(false)}>Home</Link>
+              <Home size={18} />
+              <Link to="/home" onClick={() => setMenuOpen(false)}>
+                Home
+              </Link>
             </li>
             <li className="flex items-center gap-2">
-              <ShoppingCart size={18} /> 
-              <Link to="/restaurants" onClick={() => setMenuOpen(false)}>Restaurants</Link>
+              <ShoppingCart size={18} />
+              <Link to="/restaurants" onClick={() => setMenuOpen(false)}>
+                Restaurants
+              </Link>
             </li>
 
             {isLoggedIn ? (
               <>
                 <li className="flex items-center gap-2">
-                  <ClipboardList size={18} /> 
-                  <Link to="/my-orders" onClick={() => setMenuOpen(false)}>My Orders</Link>
+                  <ClipboardList size={18} />
+                  <Link to="/my-orders" onClick={() => setMenuOpen(false)}>
+                    My Orders
+                  </Link>
                 </li>
                 <li className="flex items-center gap-2">
-                  <AlertTriangle size={18} /> 
-                  <Link to="/my-complaints" onClick={() => setMenuOpen(false)}>Complaints</Link>
+                  <AlertTriangle size={18} />
+                  <Link to="/my-complaints" onClick={() => setMenuOpen(false)}>
+                    Complaints
+                  </Link>
                 </li>
                 <li className="flex items-center gap-2">
-                  <Settings size={18} /> 
-                  <Link to="/profile-setting" onClick={() => setMenuOpen(false)}>Profile Settings</Link>
+                  <Settings size={18} />
+                  <Link
+                    to="/profile-setting"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Profile Settings
+                  </Link>
                 </li>
-               
+
                 <li className="flex items-center gap-2">
-                  <ShoppingCart size={18} /> 
+                  <ShoppingCart size={18} />
                   <Link to="/cart" onClick={() => setMenuOpen(false)}>
                     Cart
                   </Link>
                   {totalQuantity > 0 && (
-                    <span className="ml-auto badge badge-sm bg-orange-500 text-white">{totalQuantity}</span>
+                    <span className="ml-auto badge badge-sm bg-orange-500 text-white">
+                      {totalQuantity}
+                    </span>
                   )}
                 </li>
                 <li className="pt-2">
@@ -204,12 +253,16 @@ const Header = () => {
             ) : (
               <>
                 <li className="flex items-center gap-2">
-                  <User size={18} /> 
-                  <Link to="/features" onClick={() => setMenuOpen(false)}>Features</Link>
+                  <User size={18} />
+                  <Link to="/features" onClick={() => setMenuOpen(false)}>
+                    Features
+                  </Link>
                 </li>
                 <li className="flex items-center gap-2">
-                  <AlertTriangle size={18} /> 
-                  <Link to="/contact" onClick={() => setMenuOpen(false)}>Contact</Link>
+                  <AlertTriangle size={18} />
+                  <Link to="/contact" onClick={() => setMenuOpen(false)}>
+                    Contact
+                  </Link>
                 </li>
                 <div className="flex flex-col gap-2 pt-3">
                   <Link

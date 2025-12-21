@@ -1,7 +1,13 @@
 import { ChefHat } from "lucide-react";
 import React, { useState } from "react";
+import { registerRestaurant } from "../../api/restaurantApi";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 const Res_Registration_Page = () => {
+  const navigate = useNavigate();
+
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     restaurantPhoneNumber: "",
@@ -26,85 +32,131 @@ const Res_Registration_Page = () => {
     }));
   };
 
- const validateForm = () => {
-  let newErrors = {};
+  const validateForm = () => {
+    let newErrors = {};
 
-  // ✅ Restaurant Name Validation
-  if (!formData.name.trim()) {
-    newErrors.name = "Restaurant name is required.";
-  } else if (!/^[A-Za-z\s]+$/.test(formData.name.trim())) {
-    newErrors.name = "Restaurant name must contain only letters and spaces.";
-  } else if (formData.name.trim().length < 3) {
-    newErrors.name = "Restaurant name must be at least 3 characters long.";
-  }
+    // ✅ Restaurant Name Validation
+    if (!formData.name.trim()) {
+      newErrors.name = "Restaurant name is required.";
+    } else if (!/^[A-Za-z\s]+$/.test(formData.name.trim())) {
+      newErrors.name = "Restaurant name must contain only letters and spaces.";
+    } else if (formData.name.trim().length < 3) {
+      newErrors.name = "Restaurant name must be at least 3 characters long.";
+    }
 
-  // ✅ Phone Number Validation (Only digits, start with 03, 11 digits)
-  const phone = formData.restaurantPhoneNumber.trim();
-  if (!/^03\d{9}$/.test(phone)) {
-    newErrors.restaurantPhoneNumber =
-      "Phone number must start with 03 and contain exactly 11 digits (no spaces or letters).";
-  }
+    // ✅ Phone Number Validation (Only digits, start with 03, 11 digits)
+    const phone = formData.restaurantPhoneNumber.trim();
+    if (!/^03\d{9}$/.test(phone)) {
+      newErrors.restaurantPhoneNumber =
+        "Phone number must start with 03 and contain exactly 11 digits (no spaces or letters).";
+    }
 
-  // ✅ Address Validation
-  if (!formData.address.trim()) {
-    newErrors.address = "Address is required.";
-  }
+    // ✅ Address Validation
+    if (!formData.address.trim()) {
+      newErrors.address = "Address is required.";
+    }
 
-  // ✅ Logo and License Required
-  if (!formData.logo) {
-    newErrors.logo = "Restaurant logo is required.";
-  }
+    // ✅ Logo and License Required
+    if (!formData.logo) {
+      newErrors.logo = "Restaurant logo is required.";
+    }
 
-  if (!formData.license) {
-    newErrors.license = "Restaurant license is required.";
-  }
+    if (!formData.license) {
+      newErrors.license = "Restaurant license is required.";
+    }
 
-  // ✅ Cuisine Validation (must be comma-separated entries)
-  if (!formData.cuisine.trim()) {
-    newErrors.cuisine = "At least one cuisine is required.";
-  } else if (!/^([A-Za-z\s]+)(,\s*[A-Za-z\s]+)*$/.test(formData.cuisine.trim())) {
-    newErrors.cuisine =
-      "Cuisine entries must be comma-separated words (e.g., Italian, Chinese, Pakistani).";
-  }
+    // ✅ Cuisine Validation (must be comma-separated entries)
+    if (!formData.cuisine.trim()) {
+      newErrors.cuisine = "At least one cuisine is required.";
+    } else if (
+      !/^([A-Za-z\s]+)(,\s*[A-Za-z\s]+)*$/.test(formData.cuisine.trim())
+    ) {
+      newErrors.cuisine =
+        "Cuisine entries must be comma-separated words (e.g., Italian, Chinese, Pakistani).";
+    }
 
-  // ✅ Description Validation (10–500 chars)
-  const descLength = formData.description.trim().length;
-  if (descLength < 10) {
-    newErrors.description = "Description must be at least 10 characters long.";
-  } else if (descLength > 500) {
-    newErrors.description = "Description must not exceed 500 characters.";
-  }
+    // ✅ Description Validation (10–500 chars)
+    const descLength = formData.description.trim().length;
+    if (descLength < 10) {
+      newErrors.description =
+        "Description must be at least 10 characters long.";
+    } else if (descLength > 500) {
+      newErrors.description = "Description must not exceed 500 characters.";
+    }
 
-  // ✅ Opening Hours Validation (like 9AM-11PM or 10:30AM - 8:15PM)
-  const openingHoursRegex =
-    /^([1-9]|1[0-2])(:[0-5][0-9])?\s?(AM|PM)\s*-\s*([1-9]|1[0-2])(:[0-5][0-9])?\s?(AM|PM)$/i;
-  if (!formData.openingHours.trim()) {
-    newErrors.openingHours = "Opening hours are required.";
-  } else if (!openingHoursRegex.test(formData.openingHours.trim())) {
-    newErrors.openingHours =
-      "Invalid format. Example: '9AM-11PM' or '10:30AM - 8:15PM'.";
-  }
+    // ✅ Opening Hours Validation (like 9AM-11PM or 10:30AM - 8:15PM)
+    const openingHoursRegex =
+      /^([1-9]|1[0-2])(:[0-5][0-9])?\s?(AM|PM)\s*-\s*([1-9]|1[0-2])(:[0-5][0-9])?\s?(AM|PM)$/i;
+    if (!formData.openingHours.trim()) {
+      newErrors.openingHours = "Opening hours are required.";
+    } else if (!openingHoursRegex.test(formData.openingHours.trim())) {
+      newErrors.openingHours =
+        "Invalid format. Example: '9AM-11PM' or '10:30AM - 8:15PM'.";
+    }
 
-  // ✅ Delivery Time (required if delivery available)
-  if (formData.deliveryAvailable && !formData.deliveryTime.trim()) {
-    newErrors.deliveryTime =
-      "Please specify delivery time if delivery is available.";
-  }
+    // ✅ Delivery Time (required if delivery available)
+    if (formData.deliveryAvailable && !formData.deliveryTime.trim()) {
+      newErrors.deliveryTime =
+        "Please specify delivery time if delivery is available.";
+    }
 
-  setErrors(newErrors);
-  return Object.keys(newErrors).length === 0;
-};
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
+    setLoading(true);
     e.preventDefault();
-
+    if (!validateForm()) {
+      console.log("Validation failed", errors);
+      setLoading(false);
+      return;
+    }
     if (!validateForm()) {
       console.log("Validation failed", errors);
       return;
     }
+    try {
+      const restaurantData = new FormData();
+      restaurantData.append("name", formData.name);
+      restaurantData.append(
+        "restaurantPhoneNumber",
+        formData.restaurantPhoneNumber
+      );
+      restaurantData.append("address", formData.address);
+      restaurantData.append("cuisine", formData.cuisine);
+      restaurantData.append("description", formData.description);
+      restaurantData.append("openingHours", formData.openingHours);
+      restaurantData.append("deliveryAvailable", formData.deliveryAvailable);
+      restaurantData.append("deliveryTime", formData.deliveryTime);
+      restaurantData.append("logo", formData.logo);
+      restaurantData.append("license", formData.license);
 
-    console.log("Restaurant Registration Data:", formData);
+      const response = await registerRestaurant(restaurantData);
+      const data = response.data;
+      if (data.success) {
+        toast.success("Restaurant Register Successfuly");
+        setFormData({
+          name: "",
+          restaurantPhoneNumber: "",
+          address: "",
+          cuisine: "",
+          description: "",
+          openingHours: "",
+          deliveryAvailable: "",
+          deliveryTime: "",
+          logo: null,
+          license: null,
+        });
+
+        document.getElementById("logoInput").value = "";
+        document.getElementById("licenseInput").value = "";
+        setLoading(false);
+        navigate("/restaurant/register-status");
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -112,7 +164,8 @@ const Res_Registration_Page = () => {
       <div className="card w-full max-w-2xl bg-white shadow-xl">
         <div className="card-body">
           <h2 className="card-title text-2xl font-bold text-orange-500">
-            Register Your Restaurant <ChefHat size={28} className="hidden md:inline" />
+            Register Your Restaurant{" "}
+            <ChefHat size={28} className="hidden md:inline" />
           </h2>
           <p className="text-gray-600 mb-4">
             Fill in the details below to register your restaurant.
@@ -131,7 +184,9 @@ const Res_Registration_Page = () => {
                 onChange={handleChange}
                 placeholder="e.g., Spicy Hut"
                 className={`input w-full ${
-                  errors.name ? "input-error" : "focus:ring-2 focus:ring-orange-400"
+                  errors.name
+                    ? "input-error"
+                    : "focus:ring-2 focus:ring-orange-400"
                 }`}
               />
               {errors.name && (
@@ -192,6 +247,7 @@ const Res_Registration_Page = () => {
               <input
                 type="file"
                 name="logo"
+                id="logoInput"
                 accept="image/*"
                 onChange={handleChange}
                 className={`file-input w-full ${
@@ -213,6 +269,7 @@ const Res_Registration_Page = () => {
               <input
                 type="file"
                 name="license"
+                id="licenseInput"
                 accept="image/*"
                 onChange={handleChange}
                 className={`file-input w-full ${
@@ -337,7 +394,11 @@ const Res_Registration_Page = () => {
                 type="submit"
                 className="btn bg-orange-500 hover:bg-orange-600 text-white"
               >
-                Register Restaurant
+                {loading ? (
+                  <span className="loading loading-spinner loading-sm"></span>
+                ) : (
+                  "Register Restaurant"
+                )}
               </button>
             </div>
           </form>

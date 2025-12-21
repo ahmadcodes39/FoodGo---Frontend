@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useCart } from "../../App Global States/CartContext";
+import { useCart } from "../../../App Global States/CartContext";
 import { CircleCheck } from 'lucide-react';
 
 

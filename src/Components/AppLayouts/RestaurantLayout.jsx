@@ -12,21 +12,22 @@ import {
   LucideMessageSquareWarning,
 } from "lucide-react";
 import SideBar from "../Common/SideBar";
+import { useParams } from "react-router-dom";
 
 const RestaurantLayout = ({ children, showSidebar }) => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-
+const { id } = useParams(); 
   const items = [
-    { title: "Dashboard", icon: <LayoutDashboard />, destination: "/restaurant/dashboard" },
-    { title: "Orders", icon: <Package />, destination: "/restaurant/orders-page" },
-    { title: "Menu", icon: <Utensils />, destination: "/restaurant/menu-page" },
-    { title: "Analytics", icon: <ChartColumnDecreasing />, destination: "/restaurant/analytics-page" },
-    { title: "Account Settings", icon: <UserCog />, destination: "/restaurant/account-settings" },
-    { title: "Restaurant Profile", icon: <Store />, destination: "/restaurant/restaurant-profile" },
+    { title: "Dashboard", icon: <LayoutDashboard />, destination: `/${id}/restaurant/dashboard` },
+    { title: "Orders", icon: <Package />, destination: `/${id}/restaurant/orders-page` },
+    { title: "Menu", icon: <Utensils />, destination: `/${id}/restaurant/menu-page` },
+    { title: "Analytics", icon: <ChartColumnDecreasing />, destination: `/${id}/restaurant/analytics-page` },
+    { title: "Account Settings", icon: <UserCog />, destination: `/${id}/restaurant/account-settings` },
+    { title: "Restaurant Profile", icon: <Store />, destination: `/${id}/restaurant/restaurant-profile` },
     {
       title: "Complaints",
       icon: <LucideMessageSquareWarning />,
-      destination: "/restaurant/complaints",
+      destination: `/${id}/restaurant/complaints`,
       hasNotification: true,
     },
   ];

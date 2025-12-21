@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Clock,
   CheckCircle2,
@@ -11,6 +11,7 @@ import {
   Truck,
   UtensilsCrossed,
 } from "lucide-react";
+import { getIndividualComplaint } from "../../../api/customerApi";
 
 const STATUS_STYLES = {
   Pending: {
@@ -43,14 +44,53 @@ const ACTION_STYLES = {
   Active: "bg-green-100 text-green-700",
 };
 
-const Cus_DetailComplaintModel = ({ selectedComplaint, dummyOrderData, modalId }) => {
+const Cus_DetailComplaintModel = ({ selectedComplaint, modalId }) => {
+  const [complaintData, setComplaintData] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!selectedComplaint) return;
+
+    const getData = async () => {
+      try {
+        setLoading(true);
+
+        const response = await getIndividualComplaint(selectedComplaint);
+        const data = response.data;
+
+        if (data.success && data.complaints?.length > 0) {
+          setComplaintData(data.complaints[0]); 
+          // console.log(data.complaints[0])
+        }
+      } catch (error) {
+        console.log(error?.response?.data?.message || error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getData();
+  }, [selectedComplaint]);
 
   if (!selectedComplaint) return null;
+
+  if (loading || !complaintData) {
+    return (
+      <dialog id={modalId} className="modal">
+        <div className="modal-box">
+          <p className="text-center text-gray-600">Loading complaint details...</p>
+        </div>
+      </dialog>
+    );
+  }
+
   const statusStyle =
-    STATUS_STYLES[selectedComplaint.status] || STATUS_STYLES.Pending;
+    STATUS_STYLES[complaintData.status] || STATUS_STYLES.Pending;
+
+  const orderData = complaintData.orderId;
 
   return (
-   <dialog id={modalId} className="modal">
+    <dialog id={modalId} className="modal">
       <div className="modal-box max-w-3xl bg-gradient-to-b from-white to-gray-50 rounded-2xl p-6 shadow-xl relative animate-fadeIn">
         {/* Close Icon */}
         <form method="dialog">
@@ -61,11 +101,10 @@ const Cus_DetailComplaintModel = ({ selectedComplaint, dummyOrderData, modalId }
 
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-4 gap-3">
-          {/* Left: Restaurant Info */}
           <div className="flex items-center gap-3">
             <img
               src={
-                selectedComplaint.againstRestaurant?.image ||
+                complaintData?.againstRestaurant?.logo ||
                 "/restaurant-placeholder.jpg"
               }
               alt="Restaurant"
@@ -75,16 +114,15 @@ const Cus_DetailComplaintModel = ({ selectedComplaint, dummyOrderData, modalId }
               <h3 className="text-base sm:text-lg font-semibold text-gray-800">
                 Complaint against{" "}
                 <span className="text-orange-600">
-                  {selectedComplaint.againstRestaurant?.name}
+                  {complaintData?.againstRestaurant?.name}
                 </span>
               </h3>
               <p className="text-xs sm:text-sm text-gray-500">
-                Order ID: #{selectedComplaint.orderId}
+                Order ID: #{orderData?._id}
               </p>
             </div>
           </div>
 
-          {/* Right: Status Badge */}
           <div
             className={`self-start sm:self-auto flex items-center gap-1 text-xs sm:text-sm px-2 sm:px-3 py-1 rounded-full ${statusStyle.color}`}
           >
@@ -97,23 +135,22 @@ const Cus_DetailComplaintModel = ({ selectedComplaint, dummyOrderData, modalId }
         <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm space-y-2 mb-5">
           <p>
             <span className="font-semibold text-orange-600">Reason:</span>{" "}
-            {selectedComplaint.reason}
+            {complaintData?.reason}
+          </p>
+           <p>
+            <span className="font-semibold text-gray-800">Admin Response:</span>{" "}
+            {complaintData?.responseToCustomer || "──"}
           </p>
           <p>
             <span className="font-semibold text-gray-800">Manager Action:</span>{" "}
             <span
               className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                ACTION_STYLES[selectedComplaint.managerAction]
+                ACTION_STYLES[complaintData?.managerAction]
               }`}
             >
-              {selectedComplaint.managerAction}
+              {complaintData?.managerAction}
             </span>
           </p>
-          {selectedComplaint.responseToCustomer && (
-            <p className="italic text-gray-600 border-l-4 border-orange-400 pl-3">
-              “{selectedComplaint.responseToCustomer}”
-            </p>
-          )}
         </div>
 
         {/* Order Summary */}
@@ -127,24 +164,25 @@ const Cus_DetailComplaintModel = ({ selectedComplaint, dummyOrderData, modalId }
             <p>
               <span className="font-medium">Delivery Address:</span>{" "}
               <span className="flex items-center gap-1 text-gray-600">
-                <MapPin size={13} className="text-orange-500"/> {dummyOrderData.deliveryAddress}
+                <MapPin size={13} className="text-orange-500" />{" "}
+                {orderData?.deliveryAddress}
               </span>
             </p>
             <p>
               <span className="font-medium">Payment Method:</span>{" "}
               <span className="inline-flex items-center gap-1 text-gray-600">
-                {PAYMENT_ICONS[dummyOrderData.paymentMethod]}
-                {dummyOrderData.paymentMethod}
+                {PAYMENT_ICONS[orderData?.paymentMethod]}
+                {orderData?.paymentMethod}
               </span>
             </p>
             <p>
               <span className="font-medium">Payment Status:</span>{" "}
-              {dummyOrderData.paymentStatus}
+              {orderData?.paymentStatus}
             </p>
             <p>
               <span className="font-medium">Total Price:</span>{" "}
               <span className="font-semibold text-orange-600">
-                Rs. {dummyOrderData.totalPrice}
+                Rs. {orderData?.totalPrice}
               </span>
             </p>
           </div>
@@ -156,7 +194,7 @@ const Cus_DetailComplaintModel = ({ selectedComplaint, dummyOrderData, modalId }
               Order Progress
             </h5>
             <div className="relative border-l-2 border-orange-200 pl-4">
-              {dummyOrderData.statusHistory.map((step, index) => (
+              {orderData?.statusHistory?.map((step, index) => (
                 <div
                   key={index}
                   className="mb-3 last:mb-0 relative before:absolute before:w-3 before:h-3 before:rounded-full before:bg-orange-500 before:-left-[22px] before:top-[4px]"
@@ -178,7 +216,7 @@ const Cus_DetailComplaintModel = ({ selectedComplaint, dummyOrderData, modalId }
           <p>
             Filed on:
             <span className="font-medium text-gray-700">
-              {new Date(selectedComplaint.createdAt).toLocaleDateString()}
+              {new Date(complaintData?.createdAt).toLocaleDateString()}
             </span>
           </p>
           <form method="dialog">
