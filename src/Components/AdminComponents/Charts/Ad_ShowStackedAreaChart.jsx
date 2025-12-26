@@ -46,7 +46,7 @@ const Ad_ShowStackedAreaChart = ({ data }) => {
           </defs>
 
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="name" />
+          <XAxis dataKey="label" />
           <YAxis />
           <Tooltip />
           <Legend />

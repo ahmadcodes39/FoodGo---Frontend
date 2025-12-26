@@ -1,18 +1,27 @@
 import React from "react";
 
-const Ad_TopRestaurantTable = ({topRestaurants}) => {
- 
-
+const Ad_TopRestaurantTable = ({topRestaurants = []}) => {
   const getStatusColor = (status) => {
-   switch (status) {
-      case "Active":
+    const normalizedStatus = status?.toLowerCase();
+    switch (normalizedStatus) {
+      case "active":
         return "bg-green-100 text-green-700 border border-green-400";
-      case "Warned":
+      case "warned":
         return "bg-yellow-100 text-yellow-700 border border-yellow-400";
+      case "blocked":
+        return "bg-red-100 text-red-700 border border-red-400";
       default:
         return "bg-gray-100 text-gray-600 border border-gray-400";
     }
   };
+
+  if (!topRestaurants || topRestaurants.length === 0) {
+    return (
+      <div className="overflow-x-auto bg-white rounded-xl shadow-md p-4 cursor-default flex items-center justify-center h-64">
+        <p className="text-gray-400">No restaurant data available</p>
+      </div>
+    );
+  }
 
   return (
     <div className="overflow-x-auto bg-white rounded-xl shadow-md p-4 cursor-default">
@@ -32,7 +41,7 @@ const Ad_TopRestaurantTable = ({topRestaurants}) => {
         <tbody>
           {topRestaurants.map((restaurant, index) => (
             <tr
-              key={restaurant.id}
+              key={restaurant.restaurantId || index}
               className={`hover:bg-gray-50 transition ${
                 index < 3 ? "bg-gray-50/50" : ""
               }`}
@@ -55,15 +64,15 @@ const Ad_TopRestaurantTable = ({topRestaurants}) => {
                 {restaurant.name}
               </td>
 
-              <td className="text-gray-600">{restaurant.orders.toLocaleString()}</td>
+              <td className="text-gray-600">{restaurant.totalOrders?.toLocaleString() || 0}</td>
 
               <td className="font-semibold text-gray-800">
-                {restaurant.revenue}
+                ${restaurant.totalRevenue?.toFixed(2) || "0.00"}
               </td>
 
               <td>
                 <div className={`badge px-3 py-2 text-sm ${getStatusColor(restaurant.status)}`}>
-                  {restaurant.status}
+                  {restaurant.status?.charAt(0).toUpperCase() + restaurant.status?.slice(1) || 'N/A'}
                 </div>
               </td>
             </tr>

@@ -1,0 +1,90 @@
+import React, { useState } from "react";
+import {
+  Store,
+  Menu,
+  X,
+} from "lucide-react";
+import SideBar from "../Common/SideBar";
+
+const VerificationManagerLayout = ({ children, showSidebar }) => {
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
+  const items = [
+    { title: "Restaurants", icon: <Store />, destination: "/vrf/dashboard" },
+  ];
+
+  const userInfo = {
+    name: "Verification Manager",
+    profilePic: "/compressed.jpeg",
+  };
+
+  // Close sidebar when user clicks a link (for mobile)
+  const handleSidebarItemClick = () => {
+    setIsMobileSidebarOpen(false);
+  };
+
+  return (
+    <div className="flex relative min-h-screen bg-gray-50">
+      {/* Desktop Sidebar */}
+      {showSidebar && (
+        <div className="hidden md:block">
+          <SideBar items={items} userInfo={userInfo} />
+        </div>
+      )}
+
+      {/* Mobile Sidebar - Slide In */}
+      {showSidebar && (
+        <div
+          className={`
+            fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out
+            md:hidden
+            ${isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}
+          `}
+        >
+          <div className="flex justify-end p-4">
+            <button
+              onClick={() => setIsMobileSidebarOpen(false)}
+              className="p-2 rounded hover:bg-gray-100"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="-mt-10">
+            <SideBar
+              items={items}
+              userInfo={userInfo}
+              onItemClick={handleSidebarItemClick}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Overlay for Mobile */}
+      {showSidebar && isMobileSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+          onClick={() => setIsMobileSidebarOpen(false)}
+        />
+      )}
+
+      {/* Main Content Area */}
+      <div className={`flex-1 overflow-auto ${showSidebar ? "md:ml-64" : ""}`}>
+        {/* Mobile Menu Button */}
+        {showSidebar && (
+          <button
+            onClick={() => setIsMobileSidebarOpen(true)}
+            className="md:hidden fixed top-4 left-4 z-50 p-2 bg-orange-500 text-white rounded-md shadow-md hover:bg-orange-600 hover:shadow-lg transition-all duration-200 flex items-center justify-center"
+          >
+            <Menu className="w-6 h-6" />
+          </button>
+        )}
+
+        {/* Page Content */}
+        <div className="pt-16 md:pt-0">{children}</div>
+      </div>
+    </div>
+  );
+};
+
+export default VerificationManagerLayout;

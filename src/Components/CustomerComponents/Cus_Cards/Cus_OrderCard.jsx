@@ -93,7 +93,7 @@ const Cus_OrderCard = ({ order, onViewDetails }) => {
 
         <div className="flex justify-between flex-wrap text-orange-600 font-semibold pt-1">
           <span>Total:</span>
-          <span>PKR {order.totalPrice}</span>
+          <span>$ {order.totalPrice}</span>
         </div>
       </div>
 

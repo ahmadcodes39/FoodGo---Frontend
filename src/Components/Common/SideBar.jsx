@@ -1,10 +1,18 @@
 import React, { useContext } from "react";
-import { ChefHat, UtensilsCrossed } from "lucide-react";
-import { NavLink } from "react-router-dom";
+import { ChefHat, UtensilsCrossed, LogOut } from "lucide-react";
+import { NavLink, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../App Global States/userAuthContext";
 
 const SideBar = ({ items,onItemClick }) => {
-  const {user} = useContext(AuthContext)
+  const {user, setToken, setUser} = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    setToken(null);
+    setUser(null);
+    localStorage.removeItem("token");
+    navigate("/");
+  };
   return (
     <div className="w-64 flex flex-col justify-between shadow-2xl p-4 min-h-screen fixed top-0 left-0 bg-white">
       <div>
@@ -43,16 +51,28 @@ const SideBar = ({ items,onItemClick }) => {
         </ul>
       </div>
 
-      <div className="flex items-center gap-3 mt-6 p-2 rounded-md bg-gray-50 shadow-sm">
-        <div className="relative">
-          <img
-            src={user.profilePic}
-            alt="profile"
-            className="w-12 h-12 object-cover rounded-full border border-gray-300"
-          />
-          <span className="absolute bottom-1 right-1 block w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
+      <div>
+        {/* Logout Button */}
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-2 rounded-md p-2 w-full transition-all duration-150 hover:bg-red-500 hover:text-white text-gray-700 mb-3 border border-red-400"
+        >
+          <LogOut className="w-5 h-5" />
+          <span>Logout</span>
+        </button>
+
+        {/* User Profile */}
+        <div className="flex items-center gap-3 p-2 rounded-md bg-gray-50 shadow-sm">
+          <div className="relative">
+            <img
+              src={user.profilePic}
+              alt="profile"
+              className="w-12 h-12 object-cover rounded-full border border-gray-300"
+            />
+            <span className="absolute bottom-1 right-1 block w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
+          </div>
+          <p className="font-medium text-gray-800">{user.name}</p>
         </div>
-        <p className="font-medium text-gray-800">{user.name}</p>
       </div>
     </div>
   );

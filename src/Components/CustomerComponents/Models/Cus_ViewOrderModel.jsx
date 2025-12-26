@@ -139,7 +139,7 @@ console.log("data ",order)
                   <span>
                     {item.quantity}x {item.item?.name}
                   </span>
-                  <span>PKR {item.price}</span>
+                  <span>$ {item.price}</span>
                 </div>
               ))}
             </div>
@@ -158,7 +158,7 @@ console.log("data ",order)
           <div className="border-t border-gray-200 pt-5 mt-5 text-sm">
             <div className="flex justify-between font-bold text-lg text-orange-600 mt-2">
               <span>Total</span>
-              <span>PKR {order.totalPrice}</span>
+              <span>$ {order.totalPrice}</span>
             </div>
           </div>
 

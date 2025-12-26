@@ -10,7 +10,15 @@ import {
   Legend,
 } from "recharts";
 
-const ShowLineChart = ({ data, dataKey = "revenue", lineColor }) => {
+const ShowLineChart = ({ data = [], dataKey = "revenue", lineColor }) => {
+  if (!data || data.length === 0) {
+    return (
+      <div className="w-full h-80 bg-white rounded-xl shadow-md flex items-center justify-center">
+        <p className="text-gray-400">No data available</p>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full h-80 bg-white rounded-xl shadow-md">
       <ResponsiveContainer width="100%" height="100%">

@@ -38,7 +38,8 @@ import Ad_Analytics_Page from "./Pages/AdminPages/Ad_Analytics_Page";
 
 // Complaint Manager Pages
 import ComplaintManagerLayout from "./Components/AppLayouts/ComplaintManagerLayout";
-import CMP_Dashboard_Page from "./Pages/AdminPages/Sub Admins/ComplaintManagerPages/CMP_Dashboard_Page";
+import VerificationManagerLayout from "./Components/AppLayouts/VerificationManagerLayout";
+// import CMP_Dashboard_Page from "./Pages/AdminPages/Sub Admins/ComplaintManagerPages/CMP_Dashboard_Page";
 import CMP_View_Restaurant_Page from "./Pages/AdminPages/Sub Admins/ComplaintManagerPages/CMP_View_Restaurant_Page";
 import CMP_View_Customer_Page from "./Pages/AdminPages/Sub Admins/ComplaintManagerPages/CMP_View_Customer_Page";
 import CMP_Complaints_Page from "./Pages/AdminPages/Sub Admins/ComplaintManagerPages/CMP_Complaints_Page";
@@ -355,6 +356,16 @@ const App = () => {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/cm/:id/restaurant-info"
+          element={
+            <ProtectedRoute role="complaintManager">
+              <ComplaintManagerLayout showSidebar={true}>
+                <Ad_SpecificRestaurantInfo />
+              </ComplaintManagerLayout>
+            </ProtectedRoute>
+          }
+        />
 
         {/* Verification Manager */}
         <Route
@@ -374,7 +385,9 @@ const App = () => {
           path="/vrf/:id/restaurant-info"
           element={
             <ProtectedRoute role="verificationManager">
-              <Ad_SpecificRestaurantInfo isAuthorize={true} />
+              <VerificationManagerLayout showSidebar={true}>
+                <Ad_SpecificRestaurantInfo isAuthorize={true} />
+              </VerificationManagerLayout>
             </ProtectedRoute>
           }
         />

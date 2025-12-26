@@ -4,7 +4,7 @@ import FilterHeader from "../../Components/Common/FilterHeader";
 import Ad_RestaurantTable from "../../Components/AdminComponents/Ad_RestaurantTable";
 import Loading from "../../Components/LoadingSpinner/Loading";
 import { getRestaurants } from "../../api/adminApi";
-const Ad_Manage_Restaurant_Page = () => {
+const Ad_Manage_Restaurant_Page = ({ basePath = "admin" }) => {
   const RestaurantStatus = ["All", "Pending", "Approved", "Rejected"];
   const [activeStatus, setActiveStatus] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
@@ -67,7 +67,7 @@ const Ad_Manage_Restaurant_Page = () => {
         setSearchQuery={setSearchQuery}
         statuses={RestaurantStatus}
       />
-      <Ad_RestaurantTable data={filteredRestaurants} adminNavigate={true} />
+      <Ad_RestaurantTable data={filteredRestaurants} adminNavigate={true} basePath={basePath} />
     </div>
   );
 };
