@@ -2,7 +2,7 @@ import { Eye } from "lucide-react";
 import React, { useState } from "react";
 import Ad_ComplaintSectionModel from "./Models/Ad_ComplaintSectionModel";
 
-const Ad_ComplaintsTable = ({ complaint }) => {
+const Ad_ComplaintsTable = ({ complaint,refreshComplaints }) => {
   const [selectedComplaint, setSelectedComplaint] = useState(null);
   const handleBtnClick = (complaint) => {
     setSelectedComplaint(complaint);
@@ -92,7 +92,7 @@ const Ad_ComplaintsTable = ({ complaint }) => {
         </tbody>
       </table>
 
-      <Ad_ComplaintSectionModel complaintData={selectedComplaint} />
+      <Ad_ComplaintSectionModel complaintData={selectedComplaint} refreshComplaints={refreshComplaints} />
     </div>
   );
 };

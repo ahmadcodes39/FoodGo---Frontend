@@ -1,19 +1,37 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import TopHeading from "../../Components/Common/TopHeading";
 import FilterHeader from "../../Components/Common/FilterHeader";
 import Ad_RestaurantTable from "../../Components/AdminComponents/Ad_RestaurantTable";
-import { restaurantsData } from "../../Components/Dummy Data/DummyData";
+import Loading from "../../Components/LoadingSpinner/Loading";
+import { getRestaurants } from "../../api/adminApi";
 const Ad_Manage_Restaurant_Page = () => {
   const RestaurantStatus = ["All", "Pending", "Approved", "Rejected"];
   const [activeStatus, setActiveStatus] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
+  const [restaurants, setRestaurants] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await getRestaurants();
+        setRestaurants(response.data.restaurants);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
 
   const handleBtnClick = (text) => {
     setActiveStatus(text);
   };
 
   // filtering
-  const filteredRestaurants = restaurantsData.filter((restaurant) => {
+  const filteredRestaurants = restaurants.filter((restaurant) => {
     const matchesStatus =
       activeStatus === "All" || restaurant.status === activeStatus;
 
@@ -29,6 +47,14 @@ const Ad_Manage_Restaurant_Page = () => {
     return matchesStatus && matchesSearch;
   });
 
+  if (loading) {
+    return <Loading />;
+  }
+
+  if (error) {
+    return <div className="p-4 text-red-500">Error: {error}</div>;
+  }
+
   return (
     <div className="p-4">
       <div className="mb-4">
@@ -41,7 +67,7 @@ const Ad_Manage_Restaurant_Page = () => {
         setSearchQuery={setSearchQuery}
         statuses={RestaurantStatus}
       />
-      <Ad_RestaurantTable data={filteredRestaurants} adminNavigate = {true}/>
+      <Ad_RestaurantTable data={filteredRestaurants} adminNavigate={true} />
     </div>
   );
 };

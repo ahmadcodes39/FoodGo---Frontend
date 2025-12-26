@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import Ad_ComplaintActionModel from "./Ad_ComplaintActionModel";
 
-const Ad_ComplaintSectionModel = ({ complaintData }) => {
+const Ad_ComplaintSectionModel = ({ complaintData ,refreshComplaints }) => {
 
   if (!complaintData) return null;
 
@@ -171,10 +171,7 @@ const Ad_ComplaintSectionModel = ({ complaintData }) => {
           </div>
 
           <div className="flex flex-wrap justify-center gap-3">
-            <button className="btn btn-sm bg-yellow-500 hover:bg-yellow-600 text-white flex items-center gap-1">
-              <AlertTriangle size={16} /> Mark Pending
-            </button>
-
+           
             <button
               onClick={handleBtnClick}
               className="btn btn-sm bg-green-500 hover:bg-green-600 text-white flex items-center gap-1"
@@ -191,7 +188,7 @@ const Ad_ComplaintSectionModel = ({ complaintData }) => {
           </form>
         </div>
       </div>
-      <Ad_ComplaintActionModel complaintStatus={complaintStatus}/>
+      <Ad_ComplaintActionModel complaintStatus={complaintStatus} complaintId={_id} refreshComplaints={refreshComplaints} />
     </dialog>
   );
 };

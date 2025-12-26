@@ -2,8 +2,9 @@ import React from "react";
 import TopHeading from "../../Components/Common/TopHeading";
 import { motion } from "framer-motion";
 import ShowLineChart from "../Common/Charts/ShowLineChart";
+import Loading from "../LoadingSpinner/Loading";
 
-const Res_AnalyticsSection = ({ title, selectedPeriod, dataMap, dataKey, lineColor }) => {
+const Res_AnalyticsSection = ({ title, selectedPeriod, dataMap, dataKey, lineColor, isLoading }) => {
   const data = dataMap[selectedPeriod];
 
   return (
@@ -12,7 +13,9 @@ const Res_AnalyticsSection = ({ title, selectedPeriod, dataMap, dataKey, lineCol
         <TopHeading title={`${title} (${selectedPeriod})`} />
       </div>
 
-      {data && data.length > 0 ? (
+      {isLoading ? (
+        <Loading />
+      ) : data && data.length > 0 ? (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}

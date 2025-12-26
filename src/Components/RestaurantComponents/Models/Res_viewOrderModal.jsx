@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   MapPin,
@@ -10,9 +10,48 @@ import {
   Utensils,
 } from "lucide-react";
 
-const Res_viewOrderModal = ({ item }) => {
-  if (!item || !item._id) return null;
+import { issueAComplaint } from "../../../api/restaurantApi";
+import toast from "react-hot-toast";
 
+const Res_viewOrderModal = ({ item }) => {
+  const [complaint, setComplaint] = useState("");
+  const [complaintLoading, setComplaintLoading] = useState(false);
+
+  const submitAComplaint = async () => {
+    if (!complaint.trim()) {
+      return toast.error("Please write a complaint first");
+    }
+
+    try {
+      setComplaintLoading(true);
+
+      const data = {
+        reason: complaint,
+        orderId: item._id,
+        againstUser: item?.customerId?._id,
+        againstRestaurant: null,
+      };
+
+      const response = await issueAComplaint(data);
+
+      if (response.data.success) {
+        toast.success("Complaint submitted successfully");
+        setComplaint("");
+      }
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message || "Failed to submit complaint"
+      );
+    } finally {
+      setComplaintLoading(false);
+    }
+  };
+
+  // useEffect(() => {
+  //   console.log("item: ", item);
+  // }, [item._id]);
+
+  if (!item || !item._id) return null;
   return (
     <dialog id="view_order_model" className="modal">
       <motion.div
@@ -121,8 +160,8 @@ const Res_viewOrderModal = ({ item }) => {
                     <p className="font-semibold text-gray-800">
                       {product.name}
                     </p>
-                    <p className="text-gray-500">
-                      Category: {product.category}
+                    <p className="text-orange-500">
+                      Category: {product.item?.category}
                     </p>
                     <p className="text-gray-500">Qty: {product.quantity}</p>
                     <p className="font-medium text-gray-700 mt-1">
@@ -150,18 +189,18 @@ const Res_viewOrderModal = ({ item }) => {
           </p>
 
           <textarea
+            onChange={(e) => setComplaint(e.target.value)}
             className="textarea textarea-bordered w-full h-24 text-sm"
             placeholder="Describe your complaint here..."
           ></textarea>
 
           <div className="mt-3 flex justify-end">
             <button
-              className="btn btn-sm bg-orangeBtn text-white hover:bg-orange-600 rounded-md"
-              onClick={() =>
-                console.log("Complaint submitted for order:", item._id)
-              }
+              disabled={complaintLoading}
+              className="btn btn-sm bg-orangeBtn text-white hover:bg-orange-600 rounded-md disabled:opacity-60"
+              onClick={submitAComplaint}
             >
-              Submit Complaint
+              {complaintLoading ? "Submitting..." : "Submit Complaint"}
             </button>
           </div>
         </div>

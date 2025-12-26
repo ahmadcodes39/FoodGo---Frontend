@@ -23,29 +23,28 @@ const Res_leastSellingItems = ({ title = "Least Selling Items", items = [] }) =>
             <tbody>
               {items.map((item, index) => (
                 <tr key={index} className="hover">
-                  {/* Item Name + Image */}
                   <td>
                     <div className="flex items-center gap-3">
                       <div className="avatar">
                         <div className="mask mask-squircle w-10 h-10">
                           <img
-                            src={item.image}
-                            alt={item.name}
+                            src={item.itemImage}
+                            alt={item.itemName}
                             className="object-cover"
                           />
                         </div>
                       </div>
                       <div>
-                        <div className="font-medium">{item.name}</div>
+                        <div className="font-medium">{item.itemName}</div>
                       </div>
                     </div>
                   </td>
 
                   {/* Category */}
-                  <td className="text-gray-500">{item.category}</td>
+                  <td className="text-gray-500">{item.itemCategory}</td>
 
                   {/* Total Sold */}
-                  <td className="font-medium">{item.totalSold}</td>
+                  <td className="font-medium">{item.orders}</td>
 
                   {/* Revenue */}
                   <td>Rs. {item.revenue.toLocaleString()}</td>

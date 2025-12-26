@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import TopHeading from "../../Components/Common/TopHeading";
 import {
   LogOutIcon,
@@ -10,72 +10,184 @@ import {
   PackageIcon,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { complaints } from "../../Components/Dummy Data/DummyData";
 import Ad_KpiCards from "../../Components/AdminComponents/Cards/Ad_kpiCards";
 import Ad_actionCards from "../../Components/AdminComponents/Cards/Ad_actionCards";
 import { Link, useNavigate } from "react-router-dom";
 import ShowLineChart from "../../Components/Common/Charts/ShowLineChart";
 import QuickActions from "../../Components/Common/QuickActions";
 import Ad_ComplaintsTable from "../../Components/AdminComponents/Ad_ComplaintsTable";
+import { getAllComplaints, getDashboardStats, getRevenueGrowth } from "../../api/adminApi";
+import toast from "react-hot-toast";
+import { AuthContext } from "../../App Global States/userAuthContext";
+import Loading from "../../Components/LoadingSpinner/Loading";
 
 const Ad_Dashboard_Page = () => {
   const navigate = useNavigate();
+  const { setUser } = useContext(AuthContext);
+  const [complaints, setComplaints] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [chartLoading, setChartLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("Weekly");
+  const [revenueData, setRevenueData] = useState([]);
   const tabs = ["Weekly", "Monthly", "Yearly"];
 
-  const handleActionClick = (action) => {
-    if (action === "reviewRestaurants") {
-      navigate("/admin/restaurants");
-      console.log("Navigate to restaurant approval page");
-    } else if (action === "monitorOrders") {
-      navigate("/admin/orders");
-      console.log("Navigate to active orders page");
+  // KPI stats
+  const [cardsStats, setCardsStats] = useState({
+    totalCustomers: 0,
+    totalRestaurants: 0,
+    totaldOrders: 0,
+    pendingComplaints: 0,
+    totalRevenue: 0,
+    activeOrdersCount: 0,
+    pendingRestaurantsCount: 0,
+  });
+
+  /* ------------------ DASHBOARD STATS ------------------ */
+  useEffect(() => {
+    const fetchDashboardStats = async () => {
+      try {
+        setLoading(true);
+        const response = await getDashboardStats();
+        const data = response.data;
+
+        if (data.success) {
+          const stats = data.stats;
+          setCardsStats({
+            totalCustomers: stats.totalCustomers || 0,
+            totalRestaurants: stats.totalRestaurants || 0,
+            totaldOrders: stats.totaldOrders || 0,
+            pendingComplaints: stats.pendingComplaints || 0,
+            totalRevenue: stats.totalRevenue || 0,
+            activeOrdersCount: stats.activeOrdersCount || 0,
+            pendingRestaurantsCount: stats.pendingRestaurantsCount || 0,
+          });
+        }
+      } catch (error) {
+        toast.error("Failed to load dashboard stats");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardStats();
+  }, []);
+
+  /* ------------------ REVENUE GROWTH ------------------ */
+  useEffect(() => {
+    const fetchRevenue = async () => {
+      try {
+        setChartLoading(true);
+        const range = activeTab.toLowerCase(); // weekly | monthly | yearly
+        const response = await getRevenueGrowth(range);
+
+        if (response.data.success) {
+          setRevenueData(response.data.revenueGrowth);
+        }
+      } catch (error) {
+        toast.error("Failed to load revenue growth");
+      } finally {
+        setChartLoading(false);
+      }
+    };
+
+    fetchRevenue();
+  }, [activeTab]);
+
+  /*-------------------Complaint Data--------------------*/
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const response = await getAllComplaints();
+        const data = response.data;
+        setComplaints(data.complaints || []);
+        setLoading(false);
+      } catch (error) {
+        console.log(error);
+        toast.error(
+          error?.response?.data?.message || "Failed to fetch complaints"
+        );
+        setLoading(false);
+      }
+    };
+    getData();
+  }, []);
+
+  const fetchComplaints = async () => {
+    try {
+      setLoading(true);
+      const response = await getAllComplaints();
+      setComplaints(response.data.complaints || []);
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message || "Failed to fetch complaints"
+      );
+    } finally {
+      setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchComplaints();
+  }, []);
+
+  /* ------------------ ACTIONS ------------------ */
+  const handleActionClick = (action) => {
+    if (action === "reviewRestaurants") navigate("/admin/restaurants");
+    if (action === "monitorOrders") navigate("/admin/orders");
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setUser(null);
+    navigate("/admin/login");
+  };
+
+  /* ------------------ UI CONFIG ------------------ */
   const generalStats = [
     {
       title: "Total Customers",
-      value: 42,
+      value: cardsStats.totalCustomers,
       icon: Users,
       iconBg: "bg-blue-100",
       iconColor: "text-blue-500",
     },
     {
       title: "Total Restaurants",
-      value: 15,
+      value: cardsStats.totalRestaurants,
       icon: Store,
       iconBg: "bg-orange-100",
       iconColor: "text-orange-500",
     },
     {
       title: "Total Orders",
-      value: 345,
+      value: cardsStats.totaldOrders,
       icon: ShoppingCart,
       iconBg: "bg-purple-100",
       iconColor: "text-purple-500",
     },
     {
       title: "Total Revenue",
-      value: "$23.04K",
+      value: `$ ${cardsStats.totalRevenue}`,
       icon: DollarSign,
       iconBg: "bg-green-100",
       iconColor: "text-green-500",
     },
     {
       title: "Pending Complaints",
-      value: "12",
+      value: cardsStats.pendingComplaints,
       icon: AlertTriangle,
       iconBg: "bg-red-100",
       iconColor: "text-red-500",
     },
   ];
+
   const actionCard = [
     {
       icon: Store,
       iconColor: "text-yellow-500",
       iconBg: "bg-yellow-100",
       title: "Restaurants Approvals",
-      description: "12 restaurants waiting for approval",
+      description: `${cardsStats.pendingRestaurantsCount} restaurants waiting for approval`,
       btnText: "Review",
       action: "reviewRestaurants",
     },
@@ -84,50 +196,13 @@ const Ad_Dashboard_Page = () => {
       iconColor: "text-blue-500",
       iconBg: "bg-blue-100",
       title: "Active Orders",
-      description: "37 orders in progress",
+      description: `${cardsStats.activeOrdersCount} orders in progress`,
       btnText: "Monitor",
       action: "monitorOrders",
     },
   ];
-  // Weekly Data (7 days)
-  const weeklyData = [
-    { name: "Mon", revenue: 4200 },
-    { name: "Tue", revenue: 3100 },
-    { name: "Wed", revenue: 5400 },
-    { name: "Thu", revenue: 2800 },
-    { name: "Fri", revenue: 3900 },
-    { name: "Sat", revenue: 2500 },
-    { name: "Sun", revenue: 4600 },
-  ];
-  // Monthly Data (4 weeks)
-  const monthlyData = [
-    { name: "Week 1", revenue: 15400 },
-    { name: "Week 2", revenue: 18900 },
-    { name: "Week 3", revenue: 17600 },
-    { name: "Week 4", revenue: 20100 },
-  ];
-  // Yearly Data (12 months)
-  const yearlyData = [
-    { name: "Jan", revenue: 62000 },
-    { name: "Feb", revenue: 58000 },
-    { name: "Mar", revenue: 73000 },
-    { name: "Apr", revenue: 69000 },
-    { name: "May", revenue: 81000 },
-    { name: "Jun", revenue: 75000 },
-    { name: "Jul", revenue: 87000 },
-    { name: "Aug", revenue: 92000 },
-    { name: "Sep", revenue: 86000 },
-    { name: "Oct", revenue: 94000 },
-    { name: "Nov", revenue: 99000 },
-    { name: "Dec", revenue: 102000 },
-  ];
-  const dataMap = {
-    Weekly: weeklyData,
-    Monthly: monthlyData,
-    Yearly: yearlyData,
-  };
 
-  const actions = [
+  const quickActions = [
     {
       title: "Manage Users",
       icon: Users,
@@ -154,47 +229,60 @@ const Ad_Dashboard_Page = () => {
     },
   ];
 
+  /* ------------------ LOADING ------------------ */
+  if (loading) {
+    return <Loading />;
+  }
 
+  /* ------------------ RENDER ------------------ */
   return (
     <div className="py-2 px-4 flex flex-col bg-background-light">
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <TopHeading title={"Admin Dashboard"} />
-        <Link to={"/admin/login"}>
-        <button className="btn btn-sm sm:btn-md  bg-redBtn rounded-md text-white hover:bg-red-600 text-sm flex gap-2">
-          <LogOutIcon size={15} className="hidden sm:inline" /> Logout
+        <TopHeading title="Admin Dashboard" />
+        <button
+          className="btn btn-sm bg-redBtn text-white rounded-md hover:bg-red-600 flex gap-2"
+          onClick={handleLogout}
+        >
+          <LogOutIcon size={15} /> Logout
         </button>
-        </Link>
       </div>
-      <div className="bg-gray-100 mt-5 p-4 min-w-full shadow-md rounded-md">
+
+      {/* Welcome */}
+      <div className="bg-gray-100 mt-5 p-4 rounded-md shadow-md">
         <p className="text-xl font-semibold">Welcome,</p>
         <p className="text-gray-500 text-sm">
-          Her's what's happening with your app.
+          Here's what's happening with your app.
         </p>
       </div>
-      <div className="mt-5 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-        {generalStats.map((stat, index) => (
-          <Ad_KpiCards key={index} {...stat} />
+
+      {/* KPI Cards */}
+      <div className="mt-5 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+        {generalStats.map((stat, i) => (
+          <Ad_KpiCards key={i} {...stat} />
         ))}
       </div>
+
+      {/* Action Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 mt-5 gap-5">
-        {actionCard.map((stat, index) => (
+        {actionCard.map((card, i) => (
           <Ad_actionCards
-            key={index}
-            {...stat}
-            handleBtnClick={() => handleActionClick(stat.action)}
+            key={i}
+            {...card}
+            handleBtnClick={() => handleActionClick(card.action)}
           />
         ))}
       </div>
-      <div className="mt-10 flex md:flex-row flex-col md:justify-between md:items-center p-4">
-        <TopHeading title={"Revenue Overview"} />
-        <div role="tablist" className="flex gap-2 bg-gray-100 p-1 rounded-lg">
+
+      {/* Revenue Chart */}
+      <div className="mt-10 flex justify-between items-center p-4">
+        <TopHeading title="Revenue Overview" />
+        <div className="flex gap-2 bg-gray-100 p-1 rounded-lg">
           {tabs.map((tab) => (
             <button
               key={tab}
-              role="tab"
               onClick={() => setActiveTab(tab)}
-              className={`rounded-md px-4 py-2 text-sm font-medium transition-colors 
-              ${
+              className={`px-4 py-2 rounded-md text-sm font-medium ${
                 activeTab === tab
                   ? "bg-orange-100 text-orange-600"
                   : "text-gray-600 hover:bg-gray-200"
@@ -205,23 +293,34 @@ const Ad_Dashboard_Page = () => {
           ))}
         </div>
       </div>
+
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className=""
       >
-        <ShowLineChart data={dataMap[activeTab]} lineColor={"#f97316"}/>
+        {chartLoading ? (
+          <Loading />
+        ) : (
+          <ShowLineChart data={revenueData} lineColor="#f97316" />
+        )}
       </motion.div>
+
+      {/* Quick Actions */}
       <div className="mt-5">
-        <TopHeading title={"Quick Actions"} />
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 grid-cols-1 gap-6 mt-3">
-          <QuickActions actions={actions} />
+        <TopHeading title="Quick Actions" />
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mt-3">
+          <QuickActions actions={quickActions} />
         </div>
       </div>
+
+      {/* Complaints */}
       <div className="mt-5">
-        <TopHeading title={"Recent Complaints"}/>
-        <Ad_ComplaintsTable complaint={complaints.slice(0,5)}/>
+        <TopHeading title="Recent Complaints" />
+        <Ad_ComplaintsTable
+          complaint={complaints.slice(0,5)}
+          refreshComplaints={fetchComplaints}
+        />
       </div>
     </div>
   );

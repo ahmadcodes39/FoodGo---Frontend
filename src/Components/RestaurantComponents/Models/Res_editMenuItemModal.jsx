@@ -1,6 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useParams } from "react-router-dom";
+import { editMenuItem } from "../../../api/restaurantApi";
+import toast from "react-hot-toast";
 
-const Res_editMenuItemModal = ({ item }) => {
+const Res_editMenuItemModal = ({ item, refreshContent }) => {
+  const { id: restaurantId } = useParams();
   const [formData, setFormData] = useState({
     name: "",
     price: "",
@@ -8,8 +12,11 @@ const Res_editMenuItemModal = ({ item }) => {
     image: null,
     preview: null,
   });
-
+//   useEffect(()=>{
+// console.log(item)
+//   },[item.id])
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false); // loading state
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -21,9 +28,7 @@ const Res_editMenuItemModal = ({ item }) => {
       preview: null,
     });
 
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+    if (fileInputRef.current) fileInputRef.current.value = "";
   }, [item]);
 
   const handleChange = (e) => {
@@ -43,54 +48,71 @@ const Res_editMenuItemModal = ({ item }) => {
     }
   };
 
-  // ✅ Validation (same logic as your add modal)
   const validate = () => {
     const newErrors = {};
-
-    // Name validation
-    if (!formData.name.trim()) {
-      newErrors.name = "Name is required.";
-    } else if (!/^[A-Za-z\s]+$/.test(formData.name)) {
+    if (!formData.name.trim()) newErrors.name = "Name is required.";
+    else if (!/^[A-Za-z\s]+$/.test(formData.name))
       newErrors.name = "Name should contain only letters and spaces.";
-    }
 
-    // Price validation
-    if (!formData.price) {
-      newErrors.price = "Price is required.";
-    } else if (Number(formData.price) <= 0) {
-      newErrors.price = "Price must be a positive number.";
-    }
+    if (!formData.price) newErrors.price = "Price is required.";
+    else if (Number(formData.price) <= 0)
+      newErrors.price = "Price must be positive.";
 
-    // Category validation
-    if (!formData.category.trim()) {
-      newErrors.category = "Category is required.";
-    } else if (!/^[A-Za-z\s]+$/.test(formData.category)) {
+    if (!formData.category.trim()) newErrors.category = "Category is required.";
+    else if (!/^[A-Za-z\s]+$/.test(formData.category))
       newErrors.category = "Category should contain only letters and spaces.";
-    }
 
-    // Logo (image) validation
-    if (!formData.image) {
-      newErrors.image = "Logo is required.";
-    }
+    if (!formData.image) newErrors.image = "Logo is required.";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!validate()) return;
 
-    // console.log("Updated data:", formData);
-    document.getElementById("edit_menu_modal").close();
+    if (!item || !item.id) {
+      toast.error("Invalid menu item selected.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      // if you need to send multipart/form-data for image
+    const payload = new FormData();
+payload.append("name", formData.name);
+payload.append("price", formData.price);
+payload.append("category", formData.category);
+
+// ✅ Update here: send new file OR existing image URL
+if (formData.image instanceof File) {
+  payload.append("image", formData.image);
+} else if (typeof formData.image === "string") {
+  payload.append("imageUrl", formData.image); // existing image
+}
+
+await editMenuItem(restaurantId, item.id, payload);
+
+      toast.success("Menu item updated successfully!");
+
+      // refresh parent data
+      if (refreshContent) await refreshContent();
+
+      document.getElementById("edit_menu_modal").close();
+    } catch (err) {
+      console.error("Edit Menu Item Error:", err);
+      // toast.error(err?.response?.data?.message || "Failed to update menu item");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <dialog id="edit_menu_modal" className="modal">
       <div className="modal-box max-w-lg">
         <h3 className="font-bold text-lg mb-4 text-gray-800">Edit Menu Item</h3>
-
         <form className="space-y-4" onSubmit={handleSubmit}>
           {/* Name */}
           <div>
@@ -104,9 +126,7 @@ const Res_editMenuItemModal = ({ item }) => {
                 errors.name ? "border-red-500" : "border-gray-300"
               } rounded-md px-3 py-2 focus:ring-2 focus:ring-blueBtn focus:outline-none`}
             />
-            {errors.name && (
-              <p className="text-red-500 text-sm mt-1">{errors.name}</p>
-            )}
+            {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
           </div>
 
           {/* Price */}
@@ -121,9 +141,7 @@ const Res_editMenuItemModal = ({ item }) => {
                 errors.price ? "border-red-500" : "border-gray-300"
               } rounded-md px-3 py-2 focus:ring-2 focus:ring-blueBtn focus:outline-none`}
             />
-            {errors.price && (
-              <p className="text-red-500 text-sm mt-1">{errors.price}</p>
-            )}
+            {errors.price && <p className="text-red-500 text-sm mt-1">{errors.price}</p>}
           </div>
 
           {/* Category */}
@@ -138,9 +156,7 @@ const Res_editMenuItemModal = ({ item }) => {
                 errors.category ? "border-red-500" : "border-gray-300"
               } rounded-md px-3 py-2 focus:ring-2 focus:ring-blueBtn focus:outline-none`}
             />
-            {errors.category && (
-              <p className="text-red-500 text-sm mt-1">{errors.category}</p>
-            )}
+            {errors.category && <p className="text-red-500 text-sm mt-1">{errors.category}</p>}
           </div>
 
           {/* Logo */}
@@ -156,27 +172,16 @@ const Res_editMenuItemModal = ({ item }) => {
                 errors.image ? "border-red-500" : "border-gray-300"
               } rounded-md px-3 py-2 file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blueBtn file:text-white hover:file:bg-blue-500`}
             />
-            {errors.image && (
-              <p className="text-red-500 text-sm mt-1">{errors.image}</p>
-            )}
+            {errors.image && <p className="text-red-500 text-sm mt-1">{errors.image}</p>}
 
             {/* Preview */}
-            {formData.preview && (
-              <img
-                src={formData.preview}
-                alt="Preview"
-                className="w-20 h-20 rounded mt-2 object-cover border"
-              />
+            {formData.preview ? (
+              <img src={formData.preview} alt="Preview" className="w-20 h-20 rounded mt-2 object-cover border" />
+            ) : (
+              formData.image && typeof formData.image === "string" && (
+                <img src={formData.image} alt="Current" className="w-20 h-20 rounded mt-2 object-cover border" />
+              )
             )}
-            {!formData.preview &&
-              formData.image &&
-              typeof formData.image === "string" && (
-                <img
-                  src={formData.image}
-                  alt="Current"
-                  className="w-20 h-20 rounded mt-2 object-cover border"
-                />
-              )}
           </div>
 
           {/* Buttons */}
@@ -190,9 +195,12 @@ const Res_editMenuItemModal = ({ item }) => {
             </button>
             <button
               type="submit"
-              className="px-4 py-2 rounded-md text-white transition bg-blueBtn hover:bg-blue-500"
+              disabled={loading}
+              className={`px-4 py-2 rounded-md text-white transition ${
+                loading ? "bg-gray-400 cursor-not-allowed" : "bg-blueBtn hover:bg-blue-500"
+              }`}
             >
-              Save Changes
+              {loading ? "Saving..." : "Save Changes"}
             </button>
           </div>
         </form>

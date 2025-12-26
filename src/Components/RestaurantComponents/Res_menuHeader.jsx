@@ -10,6 +10,7 @@ const Res_menuHeader = ({
   handleBtnClick,
   searchQuery,
   setSearchQuery,
+  refreshContent
 }) => {
   return (
     <div className="flex flex-col p-4 bg-background-light ">
@@ -32,8 +33,9 @@ const Res_menuHeader = ({
         onBtnClick={handleBtnClick}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
+        refreshContent={refreshContent}
       />
-      <Res_menuItemModal />
+      <Res_menuItemModal refreshContent={refreshContent} />
     </div>
   );
 };

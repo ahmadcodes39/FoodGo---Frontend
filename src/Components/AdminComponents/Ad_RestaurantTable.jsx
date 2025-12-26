@@ -1,9 +1,12 @@
 import { Eye } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { approveRestaurant } from "../../api/adminApi";
+import toast from "react-hot-toast";
 
 const Ad_RestaurantTable = ({ data, isauthorize = true, adminNavigate ,  basePath = "admin" }) => {
   const [restaurantsData, setRestaurantData] = useState([]);
+  const [updating, setUpdating] = useState({});
   const navigate = useNavigate();
   useEffect(() => {
     setRestaurantData(data || []);
@@ -15,17 +18,39 @@ const Ad_RestaurantTable = ({ data, isauthorize = true, adminNavigate ,  basePat
     Rejected: "bg-red-100 text-red-800 border-red-300",
   };
 
-  const handleStatusChange = (id, newStatus) => {
+  const handleStatusChange = async (id, newStatus) => {
+    // Update local state immediately for UI
     setRestaurantData((prev) =>
       prev.map((restaurant) =>
         restaurant.id === id ? { ...restaurant, status: newStatus } : restaurant
       )
     );
+
+    // Call API if status is approved or rejected
+    if (newStatus === "Approved" || newStatus === "Rejected") {
+      setUpdating((prev) => ({ ...prev, [id]: true }));
+      try {
+        const statusLower = newStatus.toLowerCase(); // API expects lowercase
+        await approveRestaurant(id, statusLower);
+        toast.success("Status updated successfully");
+      } catch (error) {
+        console.error("Failed to update status:", error);
+        toast.error("Failed to update status");
+        // Revert local state on error
+        setRestaurantData((prev) =>
+          prev.map((restaurant) =>
+            restaurant.id === id ? { ...restaurant, status: prev.find(r => r.id === id)?.status || "Pending" } : restaurant
+          )
+        );
+      } finally {
+        setUpdating((prev) => ({ ...prev, [id]: false }));
+      }
+    }
   };
 
   const handleBtnClick = (item) => {
      navigate(`/${basePath}/${item.id}/restaurant-info`);
-    console.log("requested restaurant ", item);
+    // console.log("requested restaurant ", item);
   };
 
   return (
@@ -105,6 +130,7 @@ const Ad_RestaurantTable = ({ data, isauthorize = true, adminNavigate ,  basePat
                         onChange={(e) =>
                           handleStatusChange(restaurant.id, e.target.value)
                         }
+                        disabled={updating[restaurant.id]}
                         className="select select-sm border-gray-300 rounded-md"
                       >
                         <option value="Pending">Pending</option>

@@ -1,6 +1,6 @@
 import React from "react";
 
-const Res_deleteItemModal = ({ selectedItem ,handleDeleteClick }) => {
+const Res_deleteItemModal = ({ selectedItem ,handleDeleteClick,loading }) => {
   return (
     <dialog id="delete_modal" className="modal">
       <div className="modal-box rounded-xl shadow-lg">
@@ -19,6 +19,7 @@ const Res_deleteItemModal = ({ selectedItem ,handleDeleteClick }) => {
           <button
             className="px-4 py-2 rounded-md bg-redBtn text-white hover:bg-red-600"
             onClick={handleDeleteClick}
+            disabled={loading}
           >
             Yes, Delete
           </button>

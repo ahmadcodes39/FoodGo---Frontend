@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Search } from "lucide-react";
 import FilterButton from "./FilterButton";
 
@@ -8,7 +8,13 @@ const FilterHeader = ({
   statuses,
   activeStatus,
   onBtnClick,
+  refreshContent
 }) => {
+  useEffect(()=>{
+refreshContent
+  },[])
+
+
   return (
     <div className="bg-gray-100 p-4 w-full shadow-md rounded-md mt-5">
       <div

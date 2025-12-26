@@ -12,30 +12,35 @@ const Res_TopSellingItems = ({ title = "Top Selling Items", items = [] }) => {
           <table className="table table-zebra w-full text-sm">
             <thead>
               <tr className="text-gray-500 text-xs uppercase">
-                <th>Item Name</th>
-                <th>Orders</th>
+                <th>Item</th>
+                <th>Category</th>
+                <th>Sold</th>
                 <th>Revenue</th>
-                <th className="text-center">Trend</th>
               </tr>
             </thead>
 
             <tbody>
               {items.map((item, index) => (
                 <tr key={index} className="hover">
-                  <td className="font-medium">{item.name}</td>
-                  <td>{item.orders}</td>
-                  <td>Rs. {item.revenue.toLocaleString()}</td>
-                  <td className="text-center">
-                    <div
-                      className={`badge badge-sm font-semibold ${
-                        item.trend >= 0
-                          ? "badge-success bg-green-100 text-green-700"
-                          : "badge-error bg-red-100 text-red-700"
-                      }`}
-                    >
-                      {item.trend >= 0 ? `+${item.trend}%` : `${item.trend}%`}
+                  <td>
+                    <div className="flex items-center gap-3">
+                      <div className="avatar">
+                        <div className="mask mask-squircle w-10 h-10">
+                          <img
+                            src={item.itemImage}
+                            alt={item.itemName}
+                            className="object-cover"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <div className="font-medium">{item.itemName}</div>
+                      </div>
                     </div>
                   </td>
+                  <td className="text-gray-500">{item.itemCategory}</td>
+                  <td className="font-medium">{item.orders}</td>
+                  <td>Rs. {item.revenue.toLocaleString()}</td>
                 </tr>
               ))}
             </tbody>

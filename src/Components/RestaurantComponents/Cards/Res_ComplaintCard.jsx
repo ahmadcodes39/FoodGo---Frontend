@@ -27,26 +27,12 @@ const ACTION_STYLES = {
   Active: "bg-green-100 text-green-700",
 };
 
-const dummyComplaintData = {
-  _id: "order12345",
-  deliveryAddress: "123 Main Street, Karachi, Pakistan",
-  paymentMethod: "card",
-  paymentStatus: "paid",
-  totalPrice: 2450,
-  status: "delivered",
-  statusHistory: [
-    { status: "pending", time: "2025-10-25T09:00:00Z" },
-    { status: "confirmed", time: "2025-10-25T09:15:00Z" },
-    { status: "preparing", time: "2025-10-25T09:40:00Z" },
-    { status: "arriving", time: "2025-10-25T10:10:00Z" },
-    { status: "delivered", time: "2025-10-25T10:40:00Z" },
-  ],
-};
-
 const Res_ComplaintCard = ({ complaint }) => {
   const [selectedComplaint, setSelectedComplaint] = useState(null);
-  const statusStyle = STATUS_STYLES[complaint.status] || STATUS_STYLES.Pending;
-  const modalId = `res_view_detail_complaint_model_${complaint._id}`;
+
+  // Safe access for status
+  const statusStyle = STATUS_STYLES[complaint?.status] || STATUS_STYLES.Pending;
+  const modalId = `res_view_detail_complaint_model_${complaint?._id}`;
 
   useEffect(() => {
     if (selectedComplaint) {
@@ -56,9 +42,11 @@ const Res_ComplaintCard = ({ complaint }) => {
   }, [selectedComplaint, modalId]);
 
   const handleDetailBtnClick = () => {
-    setSelectedComplaint(complaint);
+    setSelectedComplaint(complaint); 
   };
-
+useEffect(()=>{
+console.log(complaint)
+},[complaint._id])
   return (
     <div className="card w-full bg-white shadow-md hover:shadow-lg transition-all border border-gray-100 rounded-2xl p-4">
       {/* Header */}
@@ -94,12 +82,18 @@ const Res_ComplaintCard = ({ complaint }) => {
       <div className="text-sm text-gray-700 space-y-2">
         <p>
           <span className="font-medium text-gray-900">Order ID:</span>{" "}
-          {complaint.orderId}
+          {complaint.order?._id || complaint.orderId}
         </p>
         <p>
           <span className="font-medium text-orange-600">Reason:</span>{" "}
           {complaint.reason}
         </p>
+        {complaint.order && (
+          <p>
+            <span className="font-medium text-gray-900">Delivery Address:</span>{" "}
+            {complaint.order.deliveryAddress}
+          </p>
+        )}
       </div>
 
       {/* Manager Section */}
@@ -123,7 +117,9 @@ const Res_ComplaintCard = ({ complaint }) => {
 
       {/* Footer */}
       <div className="flex justify-between items-center mt-4 text-xs text-gray-500">
-        <span>Filed on: {new Date(complaint.createdAt).toLocaleDateString()}</span>
+        <span>
+          Filed on: {new Date(complaint.createdAt).toLocaleDateString()}
+        </span>
         <button
           className="text-orange-600 font-semibold hover:underline"
           onClick={handleDetailBtnClick}
@@ -135,7 +131,6 @@ const Res_ComplaintCard = ({ complaint }) => {
       {/* Modal */}
       <Res_DetailComplaintModel
         selectedComplaint={selectedComplaint}
-        dummyOrderData={dummyComplaintData}
         modalId={modalId}
       />
     </div>

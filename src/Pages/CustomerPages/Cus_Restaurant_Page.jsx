@@ -55,52 +55,54 @@ const Cus_Restaurant_Page = () => {
   // =====================================
   // FILTER LOGIC
   // =====================================
-  const filteredRestaurants = useMemo(() => {
-    return restaurants.filter((restaurant) => {
-      if (
-        filters.restaurantName &&
-        !restaurant.name
-          .toLowerCase()
-          .includes(filters.restaurantName.toLowerCase())
-      )
-        return false;
+const normalize = (str) => str?.trim().toLowerCase();
 
-      if (
-        filters.address &&
-        !restaurant.address
-          .toLowerCase()
-          .includes(filters.address.toLowerCase())
-      )
-        return false;
+const filteredRestaurants = useMemo(() => {
+  return restaurants.filter((restaurant) => {
 
-      if (
-        filters.cuisines &&
-        filters.cuisines.length > 0 &&
-        !filters.cuisines.some((c) =>
-          restaurant.cuisine
-            ?.map((r) => r.toLowerCase())
-            .includes(c.toLowerCase())
+    // Restaurant name
+    if (
+      filters.restaurantName &&
+      !normalize(restaurant.name).includes(normalize(filters.restaurantName))
+    ) return false;
+
+    // Address
+    if (
+      filters.address &&
+      !normalize(restaurant.address).includes(normalize(filters.address))
+    ) return false;
+
+    // Cuisine
+    if (
+      filters.cuisines?.length &&
+      !filters.cuisines.some((c) =>
+        restaurant.cuisine?.some(
+          (r) => normalize(r) === normalize(c)
         )
       )
-        return false;
+    ) return false;
 
-      if (filters.deliveryOnly && !restaurant.deliveryAvailable) return false;
+    // Delivery only
+    if (filters.deliveryOnly && !restaurant.deliveryAvailable) return false;
 
-      if (filters.deliveryTime) {
-        const [min, max] = filters.deliveryTime.split("-").map(Number);
-        const times = restaurant.deliveryTime.match(/\d+/g);
-        if (times) {
-          const avg = (Number(times[0]) + Number(times[1])) / 2;
-          if (avg < min || avg > max) return false;
-        }
+    // Delivery time
+    if (filters.deliveryTime && restaurant.deliveryTime) {
+      const [min, max] = filters.deliveryTime.split("-").map(Number);
+      const times = restaurant.deliveryTime
+        .replace("–", "-")
+        .match(/\d+/g);
+
+      if (times?.length === 2) {
+        const avg = (+times[0] + +times[1]) / 2;
+        if (avg < min || avg > max) return false;
       }
+    }
 
-      if (filters.maxPrice && restaurant.maxPrice > filters.maxPrice)
-        return false;
+    return true;
+  });
+}, [filters, restaurants]);
 
-      return true;
-    });
-  }, [filters, restaurants]);
+
 
   const handleApplyFilters = (newFilters) => setFilters(newFilters);
 

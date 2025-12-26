@@ -2,7 +2,11 @@ import { Eye } from "lucide-react";
 import React, { useEffect, useState } from "react";
 // import { customerInfoData } from "../Dummy Data/DummyData";
 import Ad_CustomerInfoModel from "./Models/Ad_CustomerInfoModel";
+import { getCustomerProfile, updateCustomerStatus } from "../../api/adminApi";
+import toast from "react-hot-toast";
+
 const Ad_CustomerTable = ({ data }) => {
+const [loadingUserId, setLoadingUserId] = useState(null);
 
   const [customerData, setCustomerData] = useState([]);
   const [selectedCustomer,setSelectedCustomer] = useState(null)
@@ -18,20 +22,39 @@ const Ad_CustomerTable = ({ data }) => {
 
  
 
-  const handleStatusChange = (id, newStatus) => {
+const handleStatusChange = async (id, newStatus) => {
+  try {
+    setLoadingUserId(id);
+
+    await updateCustomerStatus(id, newStatus);
+
     setCustomerData((prev) =>
       prev.map((customer) =>
         customer.id === id ? { ...customer, status: newStatus } : customer
       )
     );
-  };
 
-  const handleBtnClick = (item) => {
-    setSelectedCustomer(item)
-   setTimeout(() => {
-     document.getElementById("ad_customer_info_modal").showModal()
-   }, 0);
-    console.log("requested customer ", item);
+    toast.success("Customer status updated");
+  } catch (error) {
+    toast.error(
+      error?.response?.data?.message || "Failed to update status"
+    );
+  } finally {
+    setLoadingUserId(null);
+  }
+};
+
+
+  const handleBtnClick = async (item) => {
+    try {
+      const response = await getCustomerProfile(item.id);
+      setSelectedCustomer({ ...response.data.profile, id: item.id });
+      setTimeout(() => {
+        document.getElementById("ad_customer_info_modal").showModal();
+      }, 0);
+    } catch (error) {
+      console.error("Error fetching customer profile:", error);
+    }
   };
 
   return (
@@ -93,7 +116,7 @@ const Ad_CustomerTable = ({ data }) => {
                   </td>
 
                   {/* JOINED */}
-                  <td className="px-4 py-3 text-gray-600">{new Date(customer.joined).toLocaleDateString("en-GB")}</td>
+                  <td className="px-4 py-3 text-gray-600">{new Date(customer.joinedDate).toLocaleDateString("en-GB")}</td>
 
                   {/* STATUS */}
                   <td className="px-4 py-3">
@@ -125,17 +148,21 @@ const Ad_CustomerTable = ({ data }) => {
                         <Eye size={15} />
                         View
                       </button>
-                      <select
-                        value={customer.status}
-                        onChange={(e) =>
-                          handleStatusChange(customer.id, e.target.value)
-                        }
-                        className="select select-sm border-gray-300 rounded-lg"
-                      >
-                        <option value="Active">Active</option>
-                        <option value="Warned">Warned</option>
-                        <option value="Blocked">Blocked</option>
-                      </select>
+                     <select
+  value={customer.status}
+  disabled={loadingUserId === customer.id}
+  onChange={(e) =>
+    handleStatusChange(customer.id, e.target.value)
+  }
+  className={`select select-sm border-gray-300 rounded-lg ${
+    loadingUserId === customer.id ? "opacity-50 cursor-not-allowed" : ""
+  }`}
+>
+  <option value="Active">Active</option>
+  <option value="Warned">Warned</option>
+  <option value="Blocked">Blocked</option>
+</select>
+
                     </div>
                   </td>
                 </tr>

@@ -4,33 +4,33 @@ import Ad_ordersDetailModel from "./Models/Ad_ordersDetailModel";
 
 const Ad_OrdersTable = ({ data }) => {
   const [ordersData, setOrdersData] = useState([]);
-  const [isBtnClick, setIsBtnClick] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
 
   useEffect(() => {
     setOrdersData(data || []);
   }, [data]);
 
-  const dummyOrder = {
-    id: "1001",
-    status: "Delivered",
-    date: "May 15, 2023 at 10:30 AM",
-    customer: {
-      name: "John Doe",
-      email: "john@example.com",
-      phone: "(123) 456-7890",
-      address: "123 Main St, New York, NY",
-    },
-    restaurant: {
-      name: "Pizza Palace",
-      phone: "(987) 654-3210",
-    },
-    paymentMethod: "Credit Card (****4242)",
-    items: [
-      { name: "Margherita Pizza", quantity: 1, price: 12.99 },
-      { name: "Coke", quantity: 2, price: 5.98 },
-    ],
-    total: 32.5,
-  };
+  // const dummyOrder = {
+  //   id: "1001",
+  //   status: "Delivered",
+  //   date: "May 15, 2023 at 10:30 AM",
+  //   customer: {
+  //     name: "John Doe",
+  //     email: "john@example.com",
+  //     phone: "(123) 456-7890",
+  //     address: "123 Main St, New York, NY",
+  //   },
+  //   restaurant: {
+  //     name: "Pizza Palace",
+  //     phone: "(987) 654-3210",
+  //   },
+  //   paymentMethod: "Credit Card (****4242)",
+  //   items: [
+  //     { name: "Margherita Pizza", quantity: 1, price: 12.99 },
+  //     { name: "Coke", quantity: 2, price: 5.98 },
+  //   ],
+  //   total: 32.5,
+  // };
 
   const statusColors = {
     Pending: "bg-yellow-100 text-yellow-800 border-yellow-300",
@@ -40,9 +40,8 @@ const Ad_OrdersTable = ({ data }) => {
   };
 
   const handleBtnClick = (item) => {
-    setIsBtnClick(true);
+    setSelectedOrder(item);
     document.getElementById("ad_orders_detail_model").showModal();
-    console.log("requested item ", item);
   };
 
   return (
@@ -133,7 +132,7 @@ const Ad_OrdersTable = ({ data }) => {
           </tbody>
         </table>
       </div>
-      {isBtnClick && <Ad_ordersDetailModel order={dummyOrder} /> }
+      {selectedOrder && <Ad_ordersDetailModel order={selectedOrder} /> }
     </div>
   );
 };

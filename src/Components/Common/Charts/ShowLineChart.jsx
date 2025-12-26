@@ -12,11 +12,11 @@ import {
 
 const ShowLineChart = ({ data, dataKey = "revenue", lineColor }) => {
   return (
-    <div className="w-full h-80 bg-white rounded-xl shadow-md ">
+    <div className="w-full h-80 bg-white rounded-xl shadow-md">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data}>
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="name" />
+          <XAxis dataKey="label" />
           <YAxis />
           <Tooltip />
           <Legend />
@@ -24,7 +24,7 @@ const ShowLineChart = ({ data, dataKey = "revenue", lineColor }) => {
           <Line
             type="monotone"
             dataKey={dataKey}
-            stroke={lineColor} // orange line
+            stroke={lineColor}
             strokeWidth={3}
             dot={{ r: 5 }}
           />

@@ -19,7 +19,7 @@ const Res_RecentOrderCard = ({ order }) => {
     .join(", ");
 
   const orderShortId = order._id.slice(0, 5).toUpperCase();
-  const phoneShort = order.customerId?.phone.slice(0, 6) + "****";
+  const phoneShort = order.customer?.phone ? order.customer.phone.slice(0, 6) + "****" : "N/A";
 
   return (
     <div className="flex justify-between items-start border border-gray-200 rounded-2xl p-4 mb-4 shadow-sm hover:shadow-md transition-all duration-200 bg-white">
@@ -42,7 +42,7 @@ const Res_RecentOrderCard = ({ order }) => {
         <div className="flex items-center gap-2 text-gray-700 mb-1">
           <User size={16} />
           <p className="font-medium">
-            {order.customerId?.name || "Unknown"} ({phoneShort})
+            {order.customer?.name || "Unknown"} ({phoneShort})
           </p>
         </div>
 

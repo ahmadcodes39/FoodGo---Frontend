@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   Bell,
   ChartColumnDecreasing,
@@ -12,30 +12,54 @@ import {
   LucideMessageSquareWarning,
 } from "lucide-react";
 import SideBar from "../Common/SideBar";
-import { useParams } from "react-router-dom";
+import { AuthContext } from "../../App Global States/userAuthContext";
 
 const RestaurantLayout = ({ children, showSidebar }) => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-const { id } = useParams(); 
+  const { user } = useContext(AuthContext);
   const items = [
-    { title: "Dashboard", icon: <LayoutDashboard />, destination: `/${id}/restaurant/dashboard` },
-    { title: "Orders", icon: <Package />, destination: `/${id}/restaurant/orders-page` },
-    { title: "Menu", icon: <Utensils />, destination: `/${id}/restaurant/menu-page` },
-    { title: "Analytics", icon: <ChartColumnDecreasing />, destination: `/${id}/restaurant/analytics-page` },
-    { title: "Account Settings", icon: <UserCog />, destination: `/${id}/restaurant/account-settings` },
-    { title: "Restaurant Profile", icon: <Store />, destination: `/${id}/restaurant/restaurant-profile` },
+    {
+      title: "Dashboard",
+      icon: <LayoutDashboard />,
+      destination: `/${user.restaurantId}/restaurant/dashboard`,
+    },
+    {
+      title: "Orders",
+      icon: <Package />,
+      destination: `/${user.restaurantId}/restaurant/orders-page`,
+    },
+    {
+      title: "Menu",
+      icon: <Utensils />,
+      destination: `/${user.restaurantId}/restaurant/menu-page`,
+    },
+    {
+      title: "Analytics",
+      icon: <ChartColumnDecreasing />,
+      destination: `/${user.restaurantId}/restaurant/analytics-page`,
+    },
+    {
+      title: "Account Settings",
+      icon: <UserCog />,
+      destination: `/${user.restaurantId}/restaurant/account-settings`,
+    },
+    {
+      title: "Restaurant Profile",
+      icon: <Store />,
+      destination: `/${user.restaurantId}/restaurant/restaurant-profile`,
+    },
     {
       title: "Complaints",
       icon: <LucideMessageSquareWarning />,
-      destination: `/${id}/restaurant/complaints`,
+      destination: `/${user.restaurantId}/restaurant/complaints`,
       hasNotification: true,
     },
   ];
 
-  const userInfo = {
-    name: "Syed Ahmad Ali Shah",
-    profilePic: "/compressed.jpeg",
-  };
+  // const userInfo = {
+  //   name: "Syed Ahmad Ali Shah",
+  //   profilePic: "/compressed.jpeg",
+  // };
 
   // Close mobile sidebar on item click
   const handleSidebarItemClick = () => {
@@ -47,7 +71,7 @@ const { id } = useParams();
       {/* Desktop Sidebar */}
       {showSidebar && (
         <div className="hidden md:block">
-          <SideBar items={items} userInfo={userInfo} />
+          <SideBar items={items}  />
         </div>
       )}
 
@@ -72,7 +96,6 @@ const { id } = useParams();
           <div className="-mt-10">
             <SideBar
               items={items}
-              userInfo={userInfo}
               onItemClick={handleSidebarItemClick}
             />
           </div>

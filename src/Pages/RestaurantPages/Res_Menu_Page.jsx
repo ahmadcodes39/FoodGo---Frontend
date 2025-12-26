@@ -1,43 +1,115 @@
-import React, { useState } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
+import { useParams } from "react-router-dom";
 import Res_menuHeader from "../../Components/RestaurantComponents/Res_menuHeader";
 import Res_menuTable from "../../Components/RestaurantComponents/Res_menuTable";
-import { dummyMenuData } from "../../Components/Dummy Data/DummyData";
-const Res_Menu_Page = () => {
-  const menuStats = ["All", "Piza", "Pasta", "salad", "desert", "frink"];
+import { getMenuCategories, getMenuItems } from "../../api/restaurantApi";
+import Loading from "../../Components/LoadingSpinner/Loading";
 
+const Res_Menu_Page = () => {
+  const { id } = useParams();
+
+  const [menuStats, setMenuStats] = useState(["All"]);
+  const [menuItemData, setMenuItemData] = useState([]);
   const [activeStatus, setActiveStatus] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  const handleBtnClick = (text) => {
-    setActiveStatus(text);
-    console.log(`btn clicked ${text}`);
+  // ---------------- FETCH MENU ITEMS ----------------
+  const fetchMenuItems = useCallback(async () => {
+    const { data } = await getMenuItems(id);
+
+    return data.menuItems?.map((item) => ({
+      id: item._id,
+      name: item.name,
+      category: item.category || "Uncategorized",
+      price: item.price,
+      image: item.image,
+      status: data.restaurant?.operationalStatus || "pending",
+    })) || [];
+  }, [id]);
+
+  // ---------------- FETCH CATEGORIES ----------------
+ const fetchMenuCategories = useCallback(async () => {
+  const { data } = await getMenuCategories(id);
+
+  const uniqueCategories = [
+    "All",
+    ...new Set((data.categories || []).map((c) => c.trim())),
+  ];
+
+  return uniqueCategories;
+}, [id]);
+
+
+  // ---------------- INITIAL LOAD ----------------
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        const [items, categories] = await Promise.all([
+          fetchMenuItems(),
+          fetchMenuCategories(),
+        ]);
+
+        setMenuItemData(items);
+        setMenuStats(categories);
+      } catch (err) {
+        console.error("Menu fetch error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [fetchMenuItems, fetchMenuCategories]);
+
+  // ---------------- REFRESH ----------------
+  const refreshContent = async () => {
+    setLoading(true);
+    const [items, categories] = await Promise.all([
+      fetchMenuItems(),
+      fetchMenuCategories(),
+    ]);
+    setMenuItemData(items);
+    setMenuStats(categories);
+    setLoading(false);
   };
-  console.log("search query: ", searchQuery);
 
-  const filteredData = dummyMenuData.filter((menu) => {
+  // ---------------- FILTER (MEMOIZED) ----------------
+  const filteredData = useMemo(() => {
     const query = searchQuery.toLowerCase();
 
-    const matchesSearch =
-      menu.id?.toString().toLowerCase().includes(query) ||
-      menu.name?.toLowerCase().includes(query) ||
-      menu.category?.toLowerCase().includes(query) ||
-      menu.price?.toString().includes(query);
+    return menuItemData.filter((menu) => {
+      const matchesSearch =
+        menu.name?.toLowerCase().includes(query) ||
+        menu.category?.toLowerCase().includes(query) ||
+        menu.price?.toString().includes(query);
 
-    const matchesStatus =
-      activeStatus === "All" || menu.status === activeStatus;
-    return matchesSearch && matchesStatus;
-  });
+      const matchesCategory =
+        activeStatus === "All" ||
+        menu.category.toLowerCase() === activeStatus.toLowerCase();
+
+      return matchesSearch && matchesCategory;
+    });
+  }, [menuItemData, searchQuery, activeStatus]);
+
+  if (loading) return <Loading />;
 
   return (
     <div className="flex flex-col gap-6">
       <Res_menuHeader
         activeStatus={activeStatus}
         menuStats={menuStats}
-        handleBtnClick={handleBtnClick}
+        handleBtnClick={setActiveStatus}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
+        refreshContent={refreshContent}
       />
-      <Res_menuTable dummyMenuData={filteredData} />
+
+      <Res_menuTable
+        dummyMenuData={filteredData}
+        refreshContent={refreshContent}
+      />
     </div>
   );
 };

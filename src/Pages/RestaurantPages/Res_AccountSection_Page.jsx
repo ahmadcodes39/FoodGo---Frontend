@@ -1,87 +1,112 @@
-import React, { useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { User, Phone, Mail, Lock, Save, Camera } from "lucide-react";
+import { updateProfile } from "../../api/authApi";
+import toast from "react-hot-toast";
+import { AuthContext } from "../../App Global States/userAuthContext";
 
 const Res_AccountSection_Page = () => {
-  const profilePic = useRef(null);
-
-  // ✅ States for inputs
+  const { user, setUser } = useContext(AuthContext);
+  const profilePicRef = useRef(null);
   const [profileImage, setProfileImage] = useState("/compressed.jpeg");
-  const [formData, setFormData] = useState({
-    fullName: "Zaid Khan",
-    email: "zaid@example.com",
-    phone: "0300-1234567",
-    password: "",
-  });
+  const [profileFile, setProfileFile] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const [errors, setErrors] = useState({
+  const [formData, setFormData] = useState({
     fullName: "",
     email: "",
     phone: "",
     password: "",
   });
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        fullName: user.name || "",
+        email: user.email || "",
+        phone: user.phone || "",
+        password: "",
+      });
+      setProfileImage(user.profilePic || "/compressed.jpeg");
+    }
+  }, [user]);
 
-  // ✅ Validation functions
+  const [errors, setErrors] = useState({});
+
+  /* ---------------- VALIDATIONS ---------------- */
   const validateName = (name) => /^[A-Za-z ]{3,}$/.test(name);
-  const validateEmail = (email) =>
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const validatePhone = (phone) => /^03[0-9]{9}$/.test(phone);
   const validatePassword = (password) =>
     password === "" || /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/.test(password);
 
-  // ✅ Handle field changes
+  /* ---------------- HANDLERS ---------------- */
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // ✅ Handle image upload
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => setProfileImage(reader.result);
-      reader.readAsDataURL(file);
-    }
+    if (!file) return;
+
+    setProfileFile(file);
+
+    const reader = new FileReader();
+    reader.onload = () => setProfileImage(reader.result);
+    reader.readAsDataURL(file);
   };
 
-  // ✅ Trigger file input
-  const handleImageClick = () => {
-    profilePic.current.click();
-  };
-
-  // ✅ Handle Save with validations
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
     let valid = true;
-    const newErrors = { fullName: "", email: "", phone: "", password: "" };
+    const newErrors = {};
 
     if (!validateName(formData.fullName)) {
-      newErrors.fullName =
-        "Full name must be at least 3 characters and contain only letters and spaces.";
+      newErrors.fullName = "Name must be at least 3 letters.";
       valid = false;
     }
-
     if (!validateEmail(formData.email)) {
-      newErrors.email = "Please enter a valid email address.";
+      newErrors.email = "Invalid email address.";
       valid = false;
     }
-
     if (!validatePhone(formData.phone)) {
-      newErrors.phone =
-        "Phone number must be valid and start with 03 (e.g. 03001234567).";
+      newErrors.phone = "Phone must start with 03XXXXXXXXX.";
       valid = false;
     }
-
     if (!validatePassword(formData.password)) {
       newErrors.password =
-        "Password must be at least 6 characters and include uppercase, lowercase, and a number.";
+        "Password must include uppercase, lowercase & number.";
       valid = false;
     }
 
     setErrors(newErrors);
     if (!valid) return;
 
-    console.log("Updated Data:", formData);
+    try {
+      setLoading(true);
+
+      const fd = new FormData();
+      fd.append("name", formData.fullName);
+      fd.append("email", formData.email);
+      fd.append("phone", formData.phone);
+      if (formData.password) fd.append("password", formData.password);
+      if (profileFile) fd.append("profilePic", profileFile);
+
+      const response = await updateProfile(fd);
+
+      if (response.data.success) {
+        toast.success("Profile updated successfully");
+        setFormData((prev) => ({ ...prev, password: "" }));
+
+        if (response.data.user) {
+          setUser(response.data.user);
+        }
+      }
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "Failed to update profile");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -89,7 +114,7 @@ const Res_AccountSection_Page = () => {
       {/* Profile Image */}
       <div
         className="relative w-36 h-36 group cursor-pointer"
-        onClick={handleImageClick}
+        onClick={() => profilePicRef.current.click()}
       >
         <img
           src={profileImage}
@@ -102,7 +127,7 @@ const Res_AccountSection_Page = () => {
         <input
           type="file"
           accept="image/*"
-          ref={profilePic}
+          ref={profilePicRef}
           onChange={handleImageChange}
           className="hidden"
         />
@@ -209,14 +234,13 @@ const Res_AccountSection_Page = () => {
         </label>
 
         {/* Save Button */}
-        <div className="md:col-span-2 flex justify-center">
-          <button
-            type="submit"
-            className="btn w-full bg-orange-500 hover:bg-orange-600 text-white flex items-center justify-center gap-2 text-sm font-semibold"
-          >
-            Save Changes
-          </button>
-        </div>
+        <button
+          type="submit"
+          disabled={loading}
+          className="md:col-span-2 btn bg-orange-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-orange-600 active:bg-orange-700 transition-all duration-200 text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {loading ? "Saving..." : "Save Changes"}
+        </button>
       </form>
     </div>
   );

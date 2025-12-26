@@ -3,8 +3,8 @@ import { addMenu } from "../../../api/restaurantApi";
 import { useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 
-const Res_menuItemModal = () => {
-  const { id } = useParams(); // ✅ fixed useParams
+const Res_menuItemModal = ({ refreshContent }) => {
+  const { id } = useParams();
   const [formData, setFormData] = useState({
     name: "",
     price: "",
@@ -12,9 +12,8 @@ const Res_menuItemModal = () => {
     image: null,
   });
   const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false); // ✅ loading state
+  const [loading, setLoading] = useState(false);
 
-  // ✅ Validation
   const validate = () => {
     const newErrors = {};
 
@@ -70,9 +69,16 @@ const Res_menuItemModal = () => {
       const response = await addMenu(id, menuData);
       if (response.data.success) {
         toast.success("Menu item added successfully");
-        // Reset form
+        // reset form
         setFormData({ name: "", price: "", category: "", image: null });
+
+        // close modal quickly
         document.getElementById("menu_modal").close();
+
+        // request parent to refresh (await is fine but not required)
+        if (typeof refreshContent === "function") {
+          await refreshContent();
+        }
       }
     } catch (error) {
       toast.error(error?.response?.data?.message || error.message);
@@ -84,7 +90,9 @@ const Res_menuItemModal = () => {
   return (
     <dialog id="menu_modal" className="modal">
       <div className="modal-box max-w-lg">
-        <h3 className="font-bold text-lg mb-4 text-gray-800">Add New Menu Item</h3>
+        <h3 className="font-bold text-lg mb-4 text-gray-800">
+          Add New Menu Item
+        </h3>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
           {/* Name */}
@@ -101,7 +109,9 @@ const Res_menuItemModal = () => {
                   : "border-gray-300 focus:ring-orangeBtn"
               }`}
             />
-            {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+            {errors.name && (
+              <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+            )}
           </div>
 
           {/* Price */}
@@ -118,7 +128,9 @@ const Res_menuItemModal = () => {
                   : "border-gray-300 focus:ring-orangeBtn"
               }`}
             />
-            {errors.price && <p className="text-red-500 text-sm mt-1">{errors.price}</p>}
+            {errors.price && (
+              <p className="text-red-500 text-sm mt-1">{errors.price}</p>
+            )}
           </div>
 
           {/* Category */}
@@ -135,7 +147,9 @@ const Res_menuItemModal = () => {
                   : "border-gray-300 focus:ring-orangeBtn"
               }`}
             />
-            {errors.category && <p className="text-red-500 text-sm mt-1">{errors.category}</p>}
+            {errors.category && (
+              <p className="text-red-500 text-sm mt-1">{errors.category}</p>
+            )}
           </div>
 
           {/* image */}
@@ -150,7 +164,9 @@ const Res_menuItemModal = () => {
                 errors.image ? "border-red-500" : "border-gray-300"
               }`}
             />
-            {errors.image && <p className="text-red-500 text-sm mt-1">{errors.image}</p>}
+            {errors.image && (
+              <p className="text-red-500 text-sm mt-1">{errors.image}</p>
+            )}
           </div>
 
           {/* Buttons */}
@@ -167,7 +183,9 @@ const Res_menuItemModal = () => {
               disabled={loading} // ✅ disable button when loading
               className="px-4 py-2 rounded-md text-white transition bg-orangeBtn hover:bg-orange-500 flex items-center justify-center gap-2"
             >
-              {loading && <span className="loading loading-spinner loading-sm"></span>}
+              {loading && (
+                <span className="loading loading-spinner loading-sm"></span>
+              )}
               Add Item
             </button>
           </div>

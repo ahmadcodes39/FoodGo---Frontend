@@ -1,21 +1,53 @@
 import { ChefHat } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
+import { AuthContext } from "../../App Global States/userAuthContext";
+import { loginUser } from "../../api/authApi";
+import toast from "react-hot-toast";
+import Loading from "../../Components/LoadingSpinner/Loading";
+import { useNavigate } from "react-router-dom";
 
 const CommonLoginPage = ({ role }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [heading, setHeading] = useState("");
-
+  const { setUser, setToken } = useContext(AuthContext);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
   useEffect(() => {
     if (role === "admin") setHeading("Admin");
-    else if (role === "complaint-manager") setHeading("Complaint Manager");
-    else if (role === "verification-manager")
-      setHeading("Verification Manager");
+    else if (role === "complaintManager") setHeading("Complaint Manager");
+    else if (role === "verificationManager") setHeading("Verification Manager");
     else setHeading("User");
   }, [role]);
 
   const handleFormSubmission = async (e) => {
     e.preventDefault();
+    try {
+      setLoading(true);
+      const response = await loginUser({ email, password, role });
+      const data = response.data;
+      const token = data.token;
+      if (data.success) {
+        toast.success("Authenticated Successfully");
+        setUser(data.user);
+        setToken(token);
+
+        setLoading(false);
+        if (role == "admin") {
+          navigate("/admin/dashboard");
+        } else if (role == "verificationManager") {
+          navigate("/vrf/dashboard");
+        } else if (role == "complaintManager") {
+          navigate("/cm/restaurants");
+        } else {
+          navigate("/");
+        }
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error?.response?.data?.message);
+      setLoading(false);
+    }
   };
 
   return (
@@ -73,9 +105,21 @@ const CommonLoginPage = ({ role }) => {
 
           <button
             type="submit"
-            className="w-full bg-orange-500 text-white py-2 rounded-md font-medium hover:bg-orange-600 transition"
+            disabled={loading}
+            className={`w-full flex items-center justify-center gap-2
+    bg-orange-500 text-white py-2 rounded-md font-medium
+    hover:bg-orange-600 
+    disabled:opacity-70 disabled:cursor-not-allowed transition-all duration-200
+`}
           >
-            Sign in
+            {loading ? (
+              <>
+                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                Signing in...
+              </>
+            ) : (
+              "Sign in"
+            )}
           </button>
         </form>
       </div>

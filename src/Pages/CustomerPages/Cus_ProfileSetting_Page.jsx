@@ -11,7 +11,7 @@ import { useNavigate } from "react-router-dom";
 
 const Cus_ProfileSetting_Page = () => {
   const navigate = useNavigate()
-  const { user } = useContext(AuthContext);
+  const { user,setUser } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     profilePic: "",
@@ -107,6 +107,7 @@ const Cus_ProfileSetting_Page = () => {
         const response = await updateProfile(data);
         if (response.data.success) {
           toast.success(response.data.message);
+          setUser(response.data.user)
           setLoading(false);
           navigate('/home')
         }

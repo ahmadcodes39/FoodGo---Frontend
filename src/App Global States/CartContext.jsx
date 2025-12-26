@@ -1,44 +1,66 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+// CartContext.jsx
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useMemo,
+} from "react";
 import { AuthContext } from "./userAuthContext";
 
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
-  // Be defensive: if AuthContext isn't provided, auth may be undefined
+  // Auth context (safe fallback)
   const auth = useContext(AuthContext) || {};
   const user = auth.user ?? null;
 
   const [cartItems, setCartItems] = useState([]);
-  // loadedKey tracks which localStorage key we've loaded for;
-  // we only save to localStorage after loadedKey === currentKey
   const [loadedKey, setLoadedKey] = useState(null);
 
-  const getKey = (u) => (u ? `cart_${u._id}` : "cart_guest");
+  // stable primitive key based on user._id
+  const cartKey = useMemo(() => {
+    return user?._id ? `cart_${user._id}` : "cart_guest";
+  }, [user?._id]);
 
-  // Load cart from localStorage when user changes (or on mount)
-  useEffect(() => {
-    const key = getKey(user);
+  // Helper to shallow-compare arrays of items by JSON (cheap and fine for small carts)
+  const isSameArray = (a, b) => {
     try {
-      const stored = localStorage.getItem(key);
-      setCartItems(stored ? JSON.parse(stored) : []);
+      return JSON.stringify(a || []) === JSON.stringify(b || []);
+    } catch {
+      return false;
+    }
+  };
+
+  // Load cart from localStorage when cartKey changes (login/logout/mount)
+  useEffect(() => {
+    try {
+      const storedRaw = localStorage.getItem(cartKey);
+      const parsed = storedRaw ? JSON.parse(storedRaw) : [];
+
+      // Avoid setting state if it's identical (prevents extra renders)
+      setCartItems((prev) => {
+        if (isSameArray(prev, parsed)) return prev;
+        return Array.isArray(parsed) ? parsed : [];
+      });
     } catch (err) {
       console.error("Failed parsing cart from localStorage:", err);
-      setCartItems([]);
+      setCartItems((prev) => (isSameArray(prev, []) ? prev : []));
     }
-    setLoadedKey(key);
-  }, [user]);
+
+    setLoadedKey(cartKey);
+  }, [cartKey]);
 
   // Save cart to localStorage whenever cartItems change,
   // but only after we've loaded the correct key (avoid accidental overwrite)
   useEffect(() => {
-    const key = getKey(user);
-    if (loadedKey !== key) return; // wait until we've loaded this key
+    if (loadedKey !== cartKey) return; // wait until we've loaded this key
     try {
-      localStorage.setItem(key, JSON.stringify(cartItems));
+      localStorage.setItem(cartKey, JSON.stringify(cartItems));
     } catch (err) {
       console.error("Failed to save cart to localStorage:", err);
     }
-  }, [cartItems, user, loadedKey]);
+  }, [cartItems, cartKey, loadedKey]);
 
   // Cart operations
   const addToCart = (item) => {
@@ -46,7 +68,7 @@ export const CartProvider = ({ children }) => {
       const existing = prev.find((i) => i._id === item._id);
       if (existing) {
         return prev.map((i) =>
-          i._id === item._id ? { ...i, quantity: i.quantity + 1 } : i
+          i._id === item._id ? { ...i, quantity: (i.quantity || 0) + 1 } : i
         );
       }
       return [...prev, { ...item, quantity: 1 }];
@@ -66,9 +88,15 @@ export const CartProvider = ({ children }) => {
   const clearCart = () => setCartItems([]);
 
   const getTotal = () =>
-    cartItems.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 0), 0);
+    cartItems.reduce(
+      (sum, item) => sum + (item.price || 0) * (item.quantity || 0),
+      0
+    );
 
-  const totalQuantity = cartItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
+  const totalQuantity = cartItems.reduce(
+    (sum, item) => sum + (item.quantity || 0),
+    0
+  );
 
   return (
     <CartContext.Provider

@@ -3,12 +3,19 @@ import React, { useState } from "react";
 import Res_deleteItemModal from "./Models/Res_deleteItemModal";
 import Res_menuItemModal from "./Models/Res_menuItemModel";
 import Res_editMenuItemModal from "./Models/Res_editMenuItemModal";
+import { deleteMenuItem } from "../../api/restaurantApi";
+import { useParams } from "react-router-dom";
+import toast from "react-hot-toast";
 
-const Res_menuTable = ({ dummyMenuData, isActionAvailable = true }) => {
-  // const [menuItems, setMenuItems] = useState(dummyMenuData);
+const Res_menuTable = ({
+  dummyMenuData,
+  isActionAvailable = true,
+  refreshContent,
+}) => {
+  const { id: restaurantId } = useParams();
   const [deleteItem, setDeleteItem] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
-
+  const [loading, setLoading] = useState(false);
   const handleActionClick = (action, item) => {
     if (action === "Delete") {
       setDeleteItem(item);
@@ -28,11 +35,27 @@ const Res_menuTable = ({ dummyMenuData, isActionAvailable = true }) => {
     }
   };
 
-  const handleDeleteClick = () => {
-    // setMenuItems((prev) => prev.filter((i) => i.id !== deleteItem.id));
-    setTimeout(() => {
-      document.getElementById("delete_modal").close();
-    }, 0);
+  const handleDeleteClick = async () => {
+    if (!deleteItem) return;
+
+    setLoading(true);
+    try {
+      const itemId = deleteItem?._id || deleteItem?.id;
+      console.log("item to delete : ", deleteItem);
+      await deleteMenuItem(restaurantId, itemId);
+      toast.success("Menu item deleted successfully!");
+      refreshContent();
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message || "Failed to delete menu item"
+      );
+    } finally {
+      setLoading(false);
+      setDeleteItem(null);
+      setTimeout(() => {
+        document.getElementById("delete_modal").close();
+      }, 0);
+    }
   };
 
   return (
@@ -62,7 +85,7 @@ const Res_menuTable = ({ dummyMenuData, isActionAvailable = true }) => {
                     <img
                       src={item.image}
                       alt={item.name}
-                      className="w-10 h-10 object-cover rounded-md"
+                      className="w-14 h-14 object-cover rounded-md"
                     />
                     <span className="font-medium">{item.name}</span>
                   </div>
@@ -76,9 +99,9 @@ const Res_menuTable = ({ dummyMenuData, isActionAvailable = true }) => {
                     Active
                   </span>
                 </td>
-                  <td>
-                    <div className="flex gap-2">
-                {isActionAvailable && (
+                <td>
+                  <div className="flex gap-2">
+                    {isActionAvailable && (
                       <button
                         onClick={() => handleActionClick("Edit", item)}
                         className="flex items-center gap-2 px-3 py-1 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
@@ -87,15 +110,18 @@ const Res_menuTable = ({ dummyMenuData, isActionAvailable = true }) => {
                         Edit
                       </button>
                     )}
-                      <button
-                        onClick={() => handleActionClick("Delete", item)}
-                        className="flex items-center gap-2 px-3 py-1 text-sm bg-red-500 text-white rounded-md hover:bg-red-600 transition"
-                      >
-                        <Trash2 size={15} />
-                        Delete
-                      </button>
-                    </div>
-                  </td>
+                    <button
+                      onClick={() => handleActionClick("Delete", item)}
+                      className="flex items-center gap-2 px-3 py-1 text-sm bg-red-500 text-white rounded-md hover:bg-red-600 transition"
+                      disabled={loading}
+                    >
+                      <Trash2 size={15} />
+                      {loading && deleteItem?._id === item._id
+                        ? "Deleting..."
+                        : "Delete"}
+                    </button>
+                  </div>
+                </td>
               </tr>
             ))
           )}
@@ -105,8 +131,12 @@ const Res_menuTable = ({ dummyMenuData, isActionAvailable = true }) => {
       <Res_deleteItemModal
         selectedItem={deleteItem}
         handleDeleteClick={handleDeleteClick}
+        loading={loading}
       />
-      <Res_editMenuItemModal item={selectedItem} />
+      <Res_editMenuItemModal
+        item={selectedItem}
+        refreshContent={refreshContent}
+      />
     </div>
   );
 };

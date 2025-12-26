@@ -321,9 +321,14 @@ const App = () => {
 
         {/* Complaint Manager */}
         <Route
+          path="/cm/login"
+          element={<CommonLoginPage role="complaintManager" />}
+        />
+
+        <Route
           path="/cm/restaurants"
           element={
-            <ProtectedRoute role="complaint-manager">
+            <ProtectedRoute role="complaintManager">
               <ComplaintManagerLayout showSidebar={true}>
                 <CMP_View_Restaurant_Page />
               </ComplaintManagerLayout>
@@ -333,7 +338,7 @@ const App = () => {
         <Route
           path="/cm/customers"
           element={
-            <ProtectedRoute role="complaint-manager">
+            <ProtectedRoute role="complaintManager">
               <ComplaintManagerLayout showSidebar={true}>
                 <CMP_View_Customer_Page />
               </ComplaintManagerLayout>
@@ -343,7 +348,7 @@ const App = () => {
         <Route
           path="/cm/complaints"
           element={
-            <ProtectedRoute role="complaint-manager">
+            <ProtectedRoute role="complaintManager">
               <ComplaintManagerLayout showSidebar={true}>
                 <CMP_Complaints_Page />
               </ComplaintManagerLayout>
@@ -353,9 +358,14 @@ const App = () => {
 
         {/* Verification Manager */}
         <Route
+          path="/vrf/login"
+          element={<CommonLoginPage role="verificationManager" />}
+        />
+
+        <Route
           path="/vrf/dashboard"
           element={
-            <ProtectedRoute role="verification-manager">
+            <ProtectedRoute role="verificationManager">
               <VRF_Dashboard_Page />
             </ProtectedRoute>
           }
@@ -363,7 +373,7 @@ const App = () => {
         <Route
           path="/vrf/:id/restaurant-info"
           element={
-            <ProtectedRoute role="verification-manager">
+            <ProtectedRoute role="verificationManager">
               <Ad_SpecificRestaurantInfo isAuthorize={true} />
             </ProtectedRoute>
           }

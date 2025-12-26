@@ -155,31 +155,7 @@ const Cus_FilterSection = ({ onApplyFilters }) => {
           </select>
         </div>
 
-        {/* Price Range */}
-        <div className="bg-white p-3 rounded-lg border">
-          <label className="label p-0 mb-2">
-            <span className="label-text text-gray-700 font-medium">
-              Price Range (₨)
-            </span>
-          </label>
-          <div className="flex flex-col gap-2">
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={priceRange}
-              onChange={(e) => setPriceRange(e.target.value)}
-              className="range range-warning range-sm"
-            />
-            <div className="flex justify-between text-sm text-gray-600">
-              <span>₨0</span>
-              <span className="font-semibold text-orange-500">
-                ₨{priceRange * 100}
-              </span>
-              <span>₨10,000</span>
-            </div>
-          </div>
-        </div>
+
       </div>
 
       {/* Buttons */}

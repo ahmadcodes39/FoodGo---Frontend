@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { AlertTriangle, Ban, CheckCircle, Send, X } from "lucide-react";
+import { resolveComplaint } from "../../../api/adminApi";
+import toast from "react-hot-toast";
 
-const Ad_ComplaintActionModel = ({ complaintStatus }) => {
+const Ad_ComplaintActionModel = ({ complaintStatus, complaintId ,refreshComplaints }) => {
   const [complaintAgainst, setComplaintAgainst] = useState("");
   const [customerMessage, setCustomerMessage] = useState("");
   const [restaurantMessage, setRestaurantMessage] = useState("");
@@ -20,15 +22,30 @@ const Ad_ComplaintActionModel = ({ complaintStatus }) => {
     }
   }, [complaintStatus]);
 
-  const handleSend = () => {
-    const payload = {
-      action: selectedAction,
-      messageToCustomer: customerMessage,
-      messageToRestaurant: restaurantMessage,
-      complaintAgainst,
-    };
-    document.getElementById("ad_complaint_Action_model").close();
-    console.log("Complaint Action Submitted:", payload);
+  const handleSend = async () => {
+    try {
+      if (!selectedAction) {
+        toast.error("Please select an action");
+        return;
+      }
+
+      await resolveComplaint(
+        complaintId,
+        selectedAction, // status
+        customerMessage || "", // messageToCustomer
+        restaurantMessage || "" // messageToRestaurant
+      );
+
+      toast.success("Complaint resolved successfully");
+      refreshComplaints()
+
+      document.getElementById("ad_complaint_Action_model")?.close();
+    } catch (error) {
+      console.error(error);
+      toast.error(
+        error?.response?.data?.message || "Failed to resolve complaint"
+      );
+    }
   };
 
   return (
@@ -125,7 +142,11 @@ const Ad_ComplaintActionModel = ({ complaintStatus }) => {
         <div className="modal-action mt-5">
           <button
             onClick={handleSend}
-            className="btn w-full sm:w-auto bg-blue-500 hover:bg-blue-600 text-white flex justify-center items-center gap-2"
+            disabled={
+              !selectedAction ||
+              (!customerMessage.trim() && !restaurantMessage.trim())
+            }
+            className="btn w-full sm:w-auto bg-blue-500 hover:bg-blue-600 text-white disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2"
           >
             <Send size={18} /> Send Message
           </button>

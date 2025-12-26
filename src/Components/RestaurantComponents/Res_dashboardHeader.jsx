@@ -1,11 +1,19 @@
 import { Bell, LogOutIcon, LucideMessageSquareWarning } from "lucide-react";
-import React from "react";
+import React, { useContext } from "react";
 import TopHeading from "../Common/TopHeading";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { AuthContext } from "../../App Global States/userAuthContext";
 
 const Res_dashboardHeader = () => {
   // You can later set this dynamically (true if unread notifications exist)
   const hasNotifications = true;
+  const navigate = useNavigate()
+  const {setUser} = useContext(AuthContext)
+  const handleLogout = ()=>{
+    localStorage.removeItem("token")
+    setUser(null)
+    navigate('/login')
+  }
 
   return (
     <div className="flex flex-col bg-background-light">
@@ -29,7 +37,8 @@ const Res_dashboardHeader = () => {
           </Link>
 
           <Link to={"/login"}>
-            <button className="btn btn-sm sm:btn-md bg-redBtn rounded-md text-white hover:bg-red-600 text-sm flex gap-2 items-center shadow-md">
+            <button className="btn btn-sm sm:btn-md bg-redBtn rounded-md text-white hover:bg-red-600 text-sm flex gap-2 items-center shadow-md"
+            onClick={handleLogout}>
               <LogOutIcon size={16} className="hidden md:inline" /> Logout
             </button>
           </Link>

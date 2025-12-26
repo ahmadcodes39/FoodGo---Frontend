@@ -24,69 +24,83 @@ const Login_Page = () => {
   const validatePassword = (password) => password.length >= 6;
   const validateName = (name) => /^[A-Za-z\s]{3,}$/.test(name.trim());
 
-  const handleFormSubmission = async (e) => {
-    e.preventDefault();
-    let valid = true;
-    const newErrors = { name: "", email: "", password: "", role: "" };
+ const handleFormSubmission = async (e) => {
+  e.preventDefault();
+  let valid = true;
+  const newErrors = { name: "", email: "", password: "", role: "" };
 
-    if (!validateName(name)) {
-      newErrors.name =
-        "Name must be at least 3 characters and contain only letters and spaces.";
-      valid = false;
-    }
+  if (!validateName(name)) {
+    newErrors.name =
+      "Name must be at least 3 characters and contain only letters and spaces.";
+    valid = false;
+  }
 
-    if (!validateEmail(email)) {
-      newErrors.email = "Please enter a valid email address.";
-      valid = false;
-    }
+  if (!validateEmail(email)) {
+    newErrors.email = "Please enter a valid email address.";
+    valid = false;
+  }
 
-    if (!validatePassword(password)) {
-      newErrors.password = "Password must be at least 6 characters long.";
-      valid = false;
-    }
+  if (!validatePassword(password)) {
+    newErrors.password = "Password must be at least 6 characters long.";
+    valid = false;
+  }
 
-    if (!role) {
-      newErrors.role = "Please select a role.";
-      valid = false;
-    }
+  if (!role) {
+    newErrors.role = "Please select a role.";
+    valid = false;
+  }
 
-    setErrors(newErrors);
-    if (!valid) return;
+  setErrors(newErrors);
+  if (!valid) return;
 
-    // const formData = { name, role, email, password };
-    const loadingToast = toast.loading("Processing...");
-    try {
-      const formData = { email, password, role };
-      // console.log("login data ", formData)
-      const response = await loginUser(formData);
-      const data = response.data;
+  const loadingToast = toast.loading("Processing...");
 
-      if (data.success) {
-        toast.success("Authenticated Successfully", { id: loadingToast });
+  try {
+    const formData = { email, password, role };
+    const response = await loginUser(formData);
+    const data = response.data;
 
-        const token = data.token;
-        const loggedInUser = data.user;
+    if (data.success) {
+      toast.success("Authenticated Successfully", { id: loadingToast });
 
-        localStorage.setItem("token", token);
+      const token = data.token;
+      const loggedInUser = data.user;
 
-        setToken(token);
-        setUser(loggedInUser);
+      localStorage.setItem("token", token);
 
+      setToken(token);
+      setUser(loggedInUser);
+
+      // -------------------------
+      // ROLE-BASED NAVIGATION
+      // -------------------------
+      if (loggedInUser.role === "customer") {
+        navigate("/home");
+        return;
+      }
+
+      if (loggedInUser.role === "restaurantOwner") {
         if (loggedInUser.isOnBoarded) {
-          navigate("/home");
+          navigate(`/${loggedInUser.restaurantId}/restaurant/dashboard`);
         } else {
           navigate("/restaurant/register");
         }
-      } else {
-        toast.error(data.message || "Authentication failed", {
-          id: loadingToast,
-        });
+        return;
       }
-    } catch (error) {
-      const message = error.response?.data?.message || "Something went wrong";
-      toast.error(message, { id: loadingToast });
+
+      // fell back
+      navigate("/");
+    } else {
+      toast.error(data.message || "Authentication failed", {
+        id: loadingToast,
+      });
     }
-  };
+  } catch (error) {
+    const message = error.response?.data?.message || "Something went wrong";
+    toast.error(message, { id: loadingToast });
+  }
+};
+
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
