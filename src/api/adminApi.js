@@ -33,6 +33,9 @@ export const resolveComplaint = (
 export const updateCustomerStatus = (userId, status) =>
   api.put("/admin/update-user-status", { userId, status });
 
+export const updateRestaurantStatus = (restaurantId, operationalStatus) =>
+  api.put("/admin/update-restaurant-status", { restaurantId, operationalStatus });
+
 export const getDashboardStats = () => api.get("/admin/dashboard-stats");
 
 export const getRevenueGrowth = (range) =>

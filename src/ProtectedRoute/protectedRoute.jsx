@@ -52,6 +52,22 @@ const ProtectedRoute = ({ children, role }) => {
     );
   }
 
+  // 🚫 BLOCKED RESTAURANT OPERATIONAL STATUS CHECK
+  // Check if restaurant is blocked by operational status
+  if (
+    user.role === "restaurantOwner" &&
+    user.operationalStatus === "blocked"
+  ) {
+    return (
+      <BlockedAccess
+        title="Restaurant Access Blocked"
+        message="Your restaurant has been temporarily blocked from operations."
+        reason="Your restaurant's operational status has been suspended. Please contact support for assistance."
+        role={user.role}
+      />
+    );
+  }
+
   // ✅ Authorized
   return children;
 };

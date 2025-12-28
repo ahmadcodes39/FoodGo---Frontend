@@ -1,7 +1,7 @@
 import { Eye } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { approveRestaurant } from "../../api/adminApi";
+import { approveRestaurant, updateRestaurantStatus } from "../../api/adminApi";
 import toast from "react-hot-toast";
 
 const Ad_RestaurantTable = ({ data, isauthorize = true, adminNavigate ,  basePath = "admin" }) => {
@@ -16,6 +16,12 @@ const Ad_RestaurantTable = ({ data, isauthorize = true, adminNavigate ,  basePat
     Pending: "bg-yellow-100 text-yellow-800 border-yellow-300",
     Approved: "bg-green-100 text-green-800 border-green-300",
     Rejected: "bg-red-100 text-red-800 border-red-300",
+  };
+
+  const operationalStatusColors = {
+    active: "bg-green-100 text-green-800 border-green-300",
+    warned: "bg-yellow-100 text-yellow-800 border-yellow-300",
+    blocked: "bg-red-100 text-red-800 border-red-300",
   };
 
   const handleStatusChange = async (id, newStatus) => {
@@ -48,6 +54,33 @@ const Ad_RestaurantTable = ({ data, isauthorize = true, adminNavigate ,  basePat
     }
   };
 
+  const handleOperationalStatusChange = async (id, newOperationalStatus) => {
+    // Update local state immediately for UI
+    setRestaurantData((prev) =>
+      prev.map((restaurant) =>
+        restaurant.id === id ? { ...restaurant, operationalStatus: newOperationalStatus } : restaurant
+      )
+    );
+
+    // Call API to update operational status
+    setUpdating((prev) => ({ ...prev, [id]: true }));
+    try {
+      await updateRestaurantStatus(id, newOperationalStatus);
+      toast.success("Operational status updated successfully");
+    } catch (error) {
+      console.error("Failed to update operational status:", error);
+      toast.error("Failed to update operational status");
+      // Revert local state on error
+      setRestaurantData((prev) =>
+        prev.map((restaurant) =>
+          restaurant.id === id ? { ...restaurant, operationalStatus: prev.find(r => r.id === id)?.operationalStatus || "active" } : restaurant
+        )
+      );
+    } finally {
+      setUpdating((prev) => ({ ...prev, [id]: false }));
+    }
+  };
+
   const handleBtnClick = (item) => {
      navigate(`/${basePath}/${item.id}/restaurant-info`);
     // console.log("requested restaurant ", item);
@@ -60,7 +93,8 @@ const Ad_RestaurantTable = ({ data, isauthorize = true, adminNavigate ,  basePat
           <tr className="text-left">
             <th>RESTAURANT</th>
             <th>CONTACT</th>
-            <th>STATUS</th>
+            <th>VERIFICATION STATUS</th>
+            <th>OPERATIONAL STATUS</th>
             <th>ORDERS</th>
             <th>REVENUE</th>
             <th>ACTIONS</th>
@@ -69,7 +103,7 @@ const Ad_RestaurantTable = ({ data, isauthorize = true, adminNavigate ,  basePat
         <tbody>
           {restaurantsData.length === 0 ? (
             <tr>
-              <td colSpan="6" className="text-center py-6 text-gray-500">
+              <td colSpan="7" className="text-center py-6 text-gray-500">
                 No restaurants found
               </td>
             </tr>
@@ -99,7 +133,7 @@ const Ad_RestaurantTable = ({ data, isauthorize = true, adminNavigate ,  basePat
                   </span>
                 </td>
 
-                {/* STATUS */}
+                {/* VERIFICATION STATUS */}
                 <td>
                   <span
                     className={`px-3 py-1 text-xs font-medium border rounded-full ${
@@ -111,32 +145,58 @@ const Ad_RestaurantTable = ({ data, isauthorize = true, adminNavigate ,  basePat
                   </span>
                 </td>
 
+                {/* OPERATIONAL STATUS */}
+                <td>
+                  <span
+                    className={`px-3 py-1 text-xs font-medium border rounded-full capitalize ${
+                      operationalStatusColors[restaurant.operationalStatus] ||
+                      "bg-gray-100 text-gray-700 border-gray-300"
+                    }`}
+                  >
+                    {restaurant.operationalStatus || "active"}
+                  </span>
+                </td>
+
                 <td>{restaurant.orders}</td>
                 <td>{restaurant.revenue}</td>
 
                 {/* ACTIONS */}
                 <td>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-col">
                     <button
                       onClick={() => handleBtnClick(restaurant)}
-                      className="flex items-center gap-2 px-3 py-1 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
+                      className="flex items-center justify-center gap-2 px-3 py-1 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
                     >
-                      <Eye size={15} />
+                      
                       View
                     </button>
                     {isauthorize && (
-                      <select
-                        value={restaurant.status}
-                        onChange={(e) =>
-                          handleStatusChange(restaurant.id, e.target.value)
-                        }
-                        disabled={updating[restaurant.id]}
-                        className="select select-sm border-gray-300 rounded-md"
-                      >
-                        <option value="Pending">Pending</option>
-                        <option value="Approved">Approved</option>
-                        <option value="Rejected">Rejected</option>
-                      </select>
+                      <div className="flex gap-2">
+                        <select
+                          value={restaurant.status}
+                          onChange={(e) =>
+                            handleStatusChange(restaurant.id, e.target.value)
+                          }
+                          disabled={updating[restaurant.id]}
+                          className="select select-sm border-gray-300 rounded-md"
+                        >
+                          <option value="Pending">Pending</option>
+                          <option value="Approved">Approved</option>
+                          <option value="Rejected">Rejected</option>
+                        </select>
+                        <select
+                          value={restaurant.operationalStatus || "active"}
+                          onChange={(e) =>
+                            handleOperationalStatusChange(restaurant.id, e.target.value)
+                          }
+                          disabled={updating[restaurant.id]}
+                          className="select select-sm border-gray-300 rounded-md"
+                        >
+                          <option value="active">Active</option>
+                          <option value="warned">Warned</option>
+                          <option value="blocked">Blocked</option>
+                        </select>
+                      </div>
                     )}
                   </div>
                 </td>
